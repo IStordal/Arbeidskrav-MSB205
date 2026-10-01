@@ -1,11 +1,38 @@
 ---
-title: "Termpaper"
-format: html
-editor: visual
+title: "Termpaper MSB205"
+author: Ivan Stordal & Antonio Isa Jakobsen 
+csl: hvl_apa7_stil_bokmal_v1
+lang: NO_nb
+
+format:
+  html:
+    fig-cap-location: bottom
+    fig-number: true
+  pdf:
+    documentclass: article
+    number-sections: true
+    keep-tex: true
+    papersize: A4
+    linestretch: 1.5
+    mainfont: "Times New Roman"
+    
+execute:
+  warning: false
+  message: false
+  error: false
+  echo: false
+  
+bibliography: MSB205.bib
+abstract: Skriv en abstract
+keywords: [""]
+---
 ---
 
 ```{r}
-# Husk å sette label: setup for chunken som laster pakker
+#| label: setup
+#| message: false
+#| echo: true
+#| warning: false
 library(tidyverse)
 library(lubridate)
 library(sf)
@@ -29,7 +56,7 @@ library(modelsummary)
 
 
 
-Fra forelesningen:
+# Fra forelesningen:
 innhenting qv ACS data: Må endre på variables. ellers kan alt av koden stå
 
 På variabler som skal hentes inn: På linken for mer info kan man endre siste ledd for å se info om den vairabelen man ønsker
@@ -41,7 +68,8 @@ skal sitte igjen med antall boligsalg etter sammenslåingen av boligdata og omr�
 
 For avstand til CBD så finner vi akkurat det vi trenger i forelesningsnotatene fra forrige uke
 
+Etter innlevering, bør vi gjøre det repoet privat.
 
-
+Ha et eget dokument for kode, og et eget for selve artikkelen
 
 

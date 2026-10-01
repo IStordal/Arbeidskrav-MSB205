@@ -1,0 +1,41 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: setup
+#| message: false
+#| echo: true
+#| warning: false
+library(tidyverse)
+library(lubridate)
+library(sf)
+library(here)
+library(tmap)
+library(sp)
+library(spdep)
+library(spatialreg)
+library(lmtest)
+library(sandwich)
+library(units)
+library(car)
+library(foreign)
+library(tigris)
+library(tidycensus)
+# For tabeller
+library(gt)
+library(flextable)
+library(modelsummary)
+```
+
+# 1. Innlasting av datasettet "house"
+
+# 2. Nedlastning av EJScreen
+
+# 3. Nedlastning av ACS5-data
+
+# 4. EDA i GeoDa
+
+# 5. 

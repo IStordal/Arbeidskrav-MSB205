@@ -585,7 +585,70 @@ Resultatene tyder på at boligstørrelse og prisnivå i nabolaget henger romlig 
 
 # Diskusjon av resultater
 
+### 1. Økonomisk tolkning av den hedoniske boligprismodellen
 
+En hedonisk boligprismodell brukes for å se på hvilke faktorer som påvirker prisen på en bolig. Tanken er at en bolig består av flere ulike egenskaper, for eksempel størrelse, beliggenhet, nabolag og miljøforhold. Disse egenskapene kan ha ulik betydning for hvor mye en bolig blir solgt for [@maslianskaia-pautrel2016].
+
+Koeffisientene i modellen kan derfor brukes til å si noe om hvor mye boligprisen endrer seg når en bestemt egenskap endrer seg, når de andre faktorene holdes konstante. Dette kan tolkes som den implisitte prisen på egenskapen, altså hvor mye markedet verdsetter den aktuelle egenskapen [@maslianskaia-pautrel2016].
+
+Selv om OLS, SEM, SAR, SLX og SDEM brukes til å undersøke den samme sammenhengen mellom boligegenskaper og boligpris, tar modellene hensyn til romlige sammenhenger på forskjellige måter. I OLS ser vi hovedsakelig på sammenhengen mellom egenskapene til boligen og boligprisen. SEM tar i tillegg hensyn til romlig sammenheng i forhold som ikke er direkte inkludert i modellen. SAR tar hensyn til at boligprisen på én bolig kan henge sammen med prisene på boliger i nærheten. SLX og SDEM tar også hensyn til at egenskapene til nærliggende boliger eller områder kan påvirke boligprisen. Dette betyr at tolkningen av den implisitte prisen kan være forskjellig avhengig av hvilken spatial modell som brukes [@maslianskaia-pautrel2016].
+
+### 2. Hvorfor trenger vi spatiale regresjonsmodeller?
+
+Spatiale regresjonsmodeller er nødvendige fordi boliger som ligger nær hverandre ofte kan være påvirket av de samme forholdene. Prisen på én bolig kan også henge sammen med prisene på boliger i nærheten. Det betyr at boligene ikke nødvendigvis er uavhengige av hverandre geografisk [@maslianskaia-pautrel2016].
+
+Hvis vi ikke tar hensyn til dette, kan en vanlig OLS-modell gi et misvisende bilde av sammenhengene. Spatiale modeller kan derfor brukes for å ta hensyn til slike geografiske sammenhenger [@maslianskaia-pautrel2016].
+
+De ulike modellene tar hensyn til dette på forskjellige måter. SEM tar hensyn til spatial sammenheng i feilleddene, mens SAR tar hensyn til at boligprisen kan påvirkes av prisene på boliger i nærheten. SLX og SDEM tar også hensyn til at egenskaper ved nærliggende boliger eller områder kan påvirke boligprisen [@maslianskaia-pautrel2016].
+
+### 3. Valg av spatial modell
+
+@maslianskaia-pautrel2016 viser til tre forskjellige metoder for å velge hvilken spatial modell som passer best: Specific-to-General, General-to-Specific og Story approach.
+
+I Specific-to-General starter man med en enkel modell, for eksempel OLS, og tester deretter om det er behov for å bruke en spatial modell. Her kan man blant annet teste om SAR eller SEM passer bedre enn vanlig OLS.
+
+I General-to-Specific gjør man det motsatte. Her starter man med en mer generell spatial modell og tester om modellen kan gjøres enklere uten at viktig informasjon går tapt.
+
+Den siste metoden er Story approach. Her velger man modellen ut fra økonomisk teori og hva man mener faktisk skjer i boligmarkedet. Hvis man for eksempel tror at boligprisene påvirker hverandre, kan SAR være en naturlig modell å bruke [@maslianskaia-pautrel2016].
+
+I denne oppgaven har vi brukt både Specific-to-General og General-to-Specific. Rao's Score-testene brukes for å undersøke om SAR eller SEM passer bedre enn OLS, mens likelihood ratio-testene brukes for å sammenligne de mer generelle og enklere spatiale modellene.
+
+### 4. Tolkning av koeffisientene
+
+For å sammenligne modellene skal vi velge to variabler som går igjen i modellene vi har estimert. Her kan vi for eksempel bruke `dist_CBD` og en inntektsvariabel.
+
+Når oppgave 5 og 7 er ferdige, skal vi hente koeffisientene til de to valgte variablene fra OLS, SEM, SAR, SLX og SDEM.
+
+I OLS viser koeffisienten hvordan boligprisen endrer seg når variabelen øker med én enhet, når de andre variablene holdes konstante. Koeffisientene i SEM kan tolkes omtrent på samme måte, men modellen tar i tillegg hensyn til spatial sammenheng i feilleddene.
+
+I SLX og SDEM må vi også se på effekten fra nærliggende boliger eller områder. Det betyr at vi både får en effekt fra egen observasjon og en effekt fra naboene. I SAR kan ikke koeffisienten tolkes direkte på samme måte, fordi en endring i én bolig kan påvirke andre boliger, som igjen kan påvirke den første boligen. Derfor må spatial impacts brukes for å finne den økonomiske effekten [@maslianskaia-pautrel2016].
+
+Det som skal settes inn her senere:
+Koeffisientene til de to valgte variablene fra oppgave 5 og 7, og en kort forklaring på hva de betyr i hver modell.
+
+### 5. Signifikans, fortegn og størrelse
+
+Her skal vi bruke de samme to variablene som i punkt 4 og sammenligne resultatene mellom modellene.
+
+Vi skal først se på om koeffisientene er statistisk signifikante. Deretter ser vi på om fortegnet er positivt eller negativt, og om dette virker logisk ut fra det vi forventer i boligmarkedet.
+
+Vi skal også vurdere størrelsen på koeffisienten. Selv om en variabel er statistisk signifikant, betyr det ikke nødvendigvis at effekten er stor eller økonomisk viktig.
+
+Det er også interessant å se om resultatene endrer seg mellom modellene. Hvis en variabel for eksempel er signifikant i OLS, men blir mindre eller ikke lenger er signifikant i en spatial modell, kan dette tyde på at OLS tidligere fanget opp geografiske sammenhenger som den spatiale modellen tar bedre hensyn til.
+
+Det som skal settes inn her senere:
+Koeffisient, p-verdi eller signifikansnivå, fortegn og størrelse på effekten for de to valgte variablene fra oppgave 5 og 7. Deretter vurderer vi om resultatene virker rimelige og om de endrer seg mellom OLS, SEM, SAR, SLX og SDEM.
+
+### 6. Spatial impacts i SAR-modellen
+
+I SAR-modellen kan en endring i én bolig påvirke andre boliger i nærheten. Denne effekten kan deretter spre seg videre gjennom boligmarkedet. Det er dette vi mener med spatial impacts [@maslianskaia-pautrel2016].
+
+Spatial impacts deles vanligvis inn i direkte, indirekte og total effekt. Den direkte effekten viser hvordan en endring i en variabel påvirker boligen selv, inkludert eventuelle tilbakevirkninger gjennom den spatiale sammenhengen. Den indirekte effekten viser hvordan endringen påvirker andre boliger i nærheten gjennom spillover-effekter. Den totale effekten er summen av den direkte og indirekte effekten [@maslianskaia-pautrel2016].
+
+Det er derfor ikke nok å bare se på den vanlige koeffisienten i en SAR-modell. Vi må bruke impacts for å få et bedre mål på den implisitte prisen og den totale effekten av en variabel [@maslianskaia-pautrel2016].
+
+Det som skal settes inn her senere:
+Fra SAR-modellen i oppgave 7 skal vi hente direct impact, indirect impact og total impact for de samme to variablene som i punkt 4 og 5. Deretter forklarer vi hva de tre effektene betyr økonomisk.
 
 # Oppsummering/konklusjon
 

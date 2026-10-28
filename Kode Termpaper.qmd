@@ -507,8 +507,94 @@ st_write(
 
 # Oppgave 4
 
-Bildene er generert og ser bra ut tror jeg?
-Må sjekke og høre med KG evt om de er gode nok.
+## Utforskende romlig dataanalyse
+
+Før vi estimerer de hedoniske modellene, utfører vi en utforskende romlig analyse (EDA) i GeoDa. Datasettet inneholder 25 351 boligsalg etter koblingen med EJScreen- og ACS5-dataene. Seks av de opprinnelige 25 357 observasjonene falt bort i koblingen.
+
+### Prisenes fordeling og beliggenhet
+
+Salgsprisene varierer fra 2 000 til 875 000 dollar, med en median på 65 500 og et gjennomsnitt på 79 013 dollar. Fordelingen er høyreskjev, siden gjennomsnittet ligger over medianen og noen få boliger har svært høye priser. Halvparten av boligene ble solgt for mellom 41 900 og 97 000 dollar. Prisene er oppgitt i løpende dollar for perioden 1993–1998.
+
+Prisene varierer også med avstanden til sentrum. @tbl-avstand deler boligene i fem like store grupper etter avstand til CBD og viser medianprisen i hver gruppe.
+
+```{r}
+#| label: tbl-avstand
+#| tbl-cap: "Medianpris etter avstand til CBD (femtedeler av boligene)."
+lucas_full |>
+  st_drop_geometry() |>
+  mutate(avstand = cut(dist_CBD, quantile(dist_CBD, 0:5/5), include.lowest = TRUE)) |>
+  group_by(avstand) |>
+  summarise(
+    `Medianpris (USD)` = median(price),
+    `Antall boliger` = n()
+  ) |>
+  rename(`Avstand til CBD (km)` = avstand) |>
+  gt()
+```
+
+Medianprisen stiger jevnt med avstanden: den er 25 000 dollar for den femtedelen av boligene som ligger nærmest CBD, og 118 500 dollar for den femtedelen som ligger lengst unna. Dette er en enkel sammenheng som ikke tar hensyn til forskjeller i boligenes størrelse og alder, og den sier ikke at avstanden i seg selv forårsaker prisforskjellene. Vi kontrollerer for slike forhold i de hedoniske modellene.
+
+### Bivariat lokal Moran's I
+
+For å finne ut hvor små og dyre, store og dyre, store og billige og små og billige boliger ligger, bruker vi bivariat lokal Moran's I med boligareal (`TLA`) som første variabel og salgspris (`price`) som andre. Statistikken sammenligner boligarealet i et punkt med gjennomsnittsprisen hos naboene. Variablene standardiseres, så «høy» og «lav» betyr over og under gjennomsnittet i datasettet. Naboene er definert som de k nærmeste boligene, og vi bruker k = 3 og k = 10. «Dyr» betyr dermed at nabolaget har høye priser, ikke nødvendigvis at selve boligen er dyr.
+
+De fire kategoriene tolkes slik:
+
+- Høy-høy: store boliger i nabolag med høye priser
+- Lav-lav: små boliger i nabolag med lave priser
+- Høy-lav: store boliger i nabolag med lave priser
+- Lav-høy: små boliger i nabolag med høye priser
+
+@fig-lisa-k3 og @fig-lisa-k10 viser klyngekartene, og @tbl-lisa viser antall boliger i hver kategori.
+
+![Bivariat lokal Moran's I for boligareal (`TLA`) og salgspris (`price`), k = 3. Bare statistisk signifikante klynger er farget.](Data/Lucas_k3.png){#fig-lisa-k3 width=100%}
+
+![Bivariat lokal Moran's I for boligareal (`TLA`) og salgspris (`price`), k = 10. Bare statistisk signifikante klynger er farget.](Data/Lucas_k10.png){#fig-lisa-k10 width=100%}
+
+```{r}
+#| label: tbl-lisa
+#| tbl-cap: "Antall boliger per klyngetype, bivariat lokal Moran's I (TLA og price)."
+tibble(
+  Klynge = c("Høy-høy", "Lav-lav", "Høy-lav", "Lav-høy", "Ikke signifikant"),
+  `k = 3`  = c(2507, 3681, 824, 142, 18197),
+  `k = 10` = c(4440, 6928, 1295, 568, 12120)
+) |>
+  gt()
+```
+
+Med k = 3 inngår 28 % av boligene (7 154 av 25 351) i en klynge som er signifikant på 5 %-nivå, mens andelen er 52 % med k = 10. Det er som forventet, siden et gjennomsnitt over flere naboer gir jevnere verdier og større sammenhengende klynger. Antall boliger som er signifikante på 0,1 %-nivå, øker fra 1 376 til 6 009.
+
+For begge vekter er høy-høy og lav-lav de vanligste klyngene, og de utgjør om lag 86 % av boligene i signifikante klynger. Med k = 10 er det henholdsvis 4 440 og 6 928 boliger. De to blandede kategoriene er langt sjeldnere: høy-lav har 1 295 boliger og lav-høy 568. Blant de signifikante klyngene er det altså vanligst at store boliger ligger i nabolag med høye priser, og små boliger i nabolag med lave priser. Samtidig inngår nesten halvparten av boligene (12 120 med k = 10) ikke i noen signifikant klynge, så mønsteret gjelder ikke alle.
+
+Høy-høy-klyngene ligger samlet i den vestlige, nordvestlige og sørvestlige delen av kartet. Lav-lav-klyngene og høy-lav-boligene ligger tett i den sentrale og østlige delen. Det er i tråd med @tbl-avstand, der de laveste prisene finnes nærmest sentrum. Det store, tett bebygde området i nord har få signifikante klynger. Mønstrene er i hovedsak de samme for k = 3 og k = 10, så resultatet er ikke avhengig av valget av vekt.
+
+Resultatene tyder på at boligstørrelse og prisnivå i nabolaget henger romlig sammen. Om det også finnes romlig autokorrelasjon i residualene fra de hedoniske modellene, tester vi senere med Moran's I.
+
+
+# Oppgave 5
+
+
+
+# Oppgave 6
+
+
+
+# Oppgave 7
+
+
+
+# Diskusjon av resultater
+
+
+
+# Oppsummering/konklusjon
+
+
+
+
+
+
+
 
 # Fra forelesningen:
 

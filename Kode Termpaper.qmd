@@ -14,6 +14,7 @@ format:
     embed-resources: true
 editor: visual
 csl: hvl_apa7_stil_bokmal_v1.csl
+bibliography: MSB205.bib
 
 execute:
   warning: false
@@ -574,10 +575,246 @@ Resultatene tyder på at boligstørrelse og prisnivå i nabolaget henger romlig 
 
 # Oppgave 5
 
+## Datagrunnlag for modellene
 
+```{r}
+#| label: model-prep
+#| include: false
+# year_month gjøres kronologisk (as_factor() gir rekkefølge etter første forekomst)
+lucas_full <- lucas_full |>
+  mutate(
+    year_month       = factor(as.character(year_month),
+                              levels = sort(unique(as.character(year_month)))),
+    age_sold         = year(sdate_dato) - yrbuilt,
+    solgt_for_ferdig = age_sold < 0,
+    inntekt_1000     = income_pc / 1000,
+    stories          = fct_collapse(stories,
+                                    two_plus = c("two", "two+half", "three", "other")),
+    across(c(PRE1960PCT, PTRAF, PNPL, PRMP, PTSDF, PM25),
+           ~ as.numeric(scale(.x)), .names = "{.col}_z")
+  )
+
+levels(lucas_full$year_month)[1]            # referansemåned (1993-01)
+sum(lucas_full$solgt_for_ferdig)            # skal være 138
+sum(is.na(st_drop_geometry(lucas_full)))    # skal være 0
+```
+
+Modellene bruker alle 25 351 boliger. Vi fjerner ingen observasjoner, siden radene må være uendret når vi lager vektmatriser i oppgave 7. Variablene som beskriver boligene, er areal, tomtestørrelse, alder ved salg (`age_sold`), antall rom, soverom, bad og halvbad, garasje, etasjer og veggmateriale. I tillegg har vi en dummy for de 138 boligene (0,5 %) som er solgt før byggeåret (negativ alder ved salg, minimum −3 år), siden prisen for slike boliger trolig ikke gjelder en ferdig bolig. Vi utelater `avalue` (vurdert verdi), som måler omtrent det samme som salgsprisen, og `age`, `syear` og `s1993`–`s1998`, siden `age` er alder i 1998 og tidsdummyene i `year_month` dekker salgstidspunktet. Etasjekategorier over én etasje er slått sammen, siden to av dem hadde svært få observasjoner. Miljøvariablene er standardisert (gjennomsnitt 0 og standardavvik 1), slik at koeffisientene gjelder per standardavvik og er sammenlignbare.
+
+## Valg av modellform
+
+Vi bruker den naturlige logaritmen av salgsprisen som avhengig variabel. Prisene er høyreskjeve (gjennomsnitt 79 013 og median 65 500 dollar, se oppgave 4), og logaritmen gjør fordelingen mer symmetrisk og lar oss tolke koeffisientene som prosentvise prisendringer. Boligareal (`TLA`) og tomtestørrelse (`lotsize`) er også logaritmert (log-log), så koeffisientene er elastisiteter: når boligarealet øker med 1 %, endres prisen med $\beta$ %, alt annet likt. De øvrige variablene står i nivå (log-nivå). For en slik variabel gir én enhets økning en prisendring på omtrent $100\beta$ %, eksakt $100(e^{\beta}-1)$ %. For andelsvariabler målt fra 0 til 1 betyr én prosentpoengs økning omtrent $\beta$ prosent endring i prisen, og for dummyvariabler er $100(e^{\beta}-1)$ % prisforskjellen mot referansekategorien.
+
+Logaritmen er ikke definert for 0. `TLA` (minimum 120) og `lotsize` (minimum 702) er positive, men hvis en variabel kan være 0, kan man bruke $\log(1+x)$ eller beholde den i nivå. Operasjoner som `/` og `+` må omsluttes av `I()` i en formel. Vi har derfor laget `inntekt_1000` (inntekt per capita i 1000 dollar) på forhånd.
+
+## Hedoniske modeller
+
+Modellene bygger på hedonisk pristeori. @bishop2020 beskriver at kjøpere velger bolig ut fra boligens egenskaper og stedsbundne goder, og at variasjon i goder blir kapitalisert i boligprisene. Maslianskaia-Pautrel og Baumont (2016) bruker romlige hedoniske modeller til å estimere implisitte priser for miljøegenskaper. Modellene utvides gradvis.
+
+**Modell 1** inneholder bare boligens egenskaper og tidsdummyer (`year_month`). Salgene strekker seg over seks år, og @bishop2020 peker på at prisfunksjonen kan endre seg over tid, og at markedet bør avgrenses til ett byområde over få år.
+
+**Modell 2** legger til avstand til CBD (`dist_CBD`), variabler fra ACS5 og demografiske variabler fra EJScreen som ikke er miljøvariabler. Fra ACS5 tar vi med inntekt per capita, etnisitetsandeler (`andel_hvit` er referansekategori, siden andelene summerer til 1), andel arbeidsledige og gjennomsnittlig reisetid til arbeid (`mwtt`). Fra EJScreen tar vi med andel med lav utdanning, andel over 64 år og andel språklig isolerte. Vi utelater `LOWINCPCT`, `VULEOPCT`, median husholdningsinntekt og fattigdomsandel, siden de i stor grad overlapper med inntekt per capita og etnisitetsandelene. @bishop2020 påpeker at goder er romlig korrelerte, og at utelatte nabolagsforhold kan gi skjeve estimater.
+
+**Modell 3** legger til et utvalg miljøvariabler fra EJScreen: andel boliger bygget før 1960 (`PRE1960PCT`), trafikknærhet (`PTRAF`), nærhet til Superfund-områder (`PNPL`), anlegg med risikostyringsplan (`PRMP`), avfallsanlegg (`PTSDF`) og PM2,5 (`PM25`). Vi utelater `OZONE` og `PWDIS`, som vi vurderer som mindre synlige for kjøpere. @bishop2020 understreker at godet må kunne observeres av kjøperne. Miljødataene er fra 2015, mens salgene er fra 1993–1998, så de fungerer som indikatorer på relativt stabile nabolagsforhold.
+
+```{r}
+#| label: model-estimation
+#| include: false
+hmod1 <- "log(price) ~ log(TLA) + log(lotsize) + age_sold + solgt_for_ferdig +
+          rooms + beds + baths + halfbaths + garage + stories + wall + year_month"
+
+hmod2 <- paste(hmod1, "+ dist_CBD + inntekt_1000 + andel_svart + andel_asiatisk +
+          andel_andre + andel_blandet + andel_arbeidsledig + mwtt +
+          LESSHSPCT + OVER64PCT + LINGISOPCT")
+
+hmod3 <- paste(hmod2, "+ PRE1960PCT_z + PTRAF_z + PNPL_z + PRMP_z + PTSDF_z + PM25_z")
+
+lm1 <- lm(formula = hmod1, data = lucas_full)
+lm2 <- lm(formula = hmod2, data = lucas_full)
+lm3 <- lm(formula = hmod3, data = lucas_full)
+
+c(nobs(lm1), nobs(lm2), nobs(lm3))   # skal være 25351
+```
+
+## Regresjonsresultater
+
+@tbl-models viser de tre modellene med robuste (HC3) t-verdier. Koeffisientene til tidsdummyene er utelatt for å spare plass.
+
+```{r}
+#| label: tbl-models
+#| tbl-cap: "Hedoniske modeller (avhengig variabel: log(salgspris)). Robuste (HC3) t-verdier i parentes. Tidsdummyer (year_month) er med i alle modellene, men vises ikke. Miljøvariablene er standardisert."
+modelsummary(
+  list(`Modell 1` = lm1, `Modell 2` = lm2, `Modell 3` = lm3),
+  vcov = "HC3",
+  statistic = "statistic",
+  stars = TRUE,
+  coef_omit = "year_month",
+  coef_rename = c(
+    "log(TLA)" = "log(boligareal)",
+    "log(lotsize)" = "log(tomtestørrelse)",
+    "age_sold" = "Alder ved salg",
+    "solgt_for_ferdigTRUE" = "Solgt før byggeår (dummy)",
+    "dist_CBD" = "Avstand til CBD (km)",
+    "inntekt_1000" = "Inntekt per capita (1000 USD)",
+    "andel_arbeidsledig" = "Andel arbeidsledige",
+    "mwtt" = "Reisetid til jobb (min)",
+    "PRE1960PCT_z" = "Boliger fra før 1960 (std.)",
+    "PTRAF_z" = "Trafikknærhet (std.)",
+    "PNPL_z" = "Nærhet til Superfund (std.)",
+    "PRMP_z" = "Nærhet til RMP-anlegg (std.)",
+    "PTSDF_z" = "Nærhet til avfallsanlegg (std.)",
+    "PM25_z" = "PM2,5 (std.)"
+  ),
+  gof_map = c("nobs", "r.squared", "adj.r.squared", "logLik"),
+  output = "gt"
+)
+```
+
+## Heteroskedastisitet og robuste standardfeil
+
+Heteroskedastisitet betyr at variansen i feilleddet ikke er konstant, men varierer med forklaringsvariablene. OLS-estimatene er fortsatt forventningsrette, men de vanlige standardfeilene og t-verdiene er da misvisende. Vi tester nullhypotesen om homoskedastisitet med Breusch–Pagan-testen.
+
+```{r}
+#| label: fmt-helper
+#| include: false
+format_p <- function(p) ifelse(p < 0.001, "< 0,001", sprintf("%.3f", p))
+```
+
+```{r}
+#| label: tbl-bp
+#| tbl-cap: "Breusch–Pagan-test for heteroskedastisitet (H0: konstant varians)."
+map_dfr(
+  list(`Modell 1` = lm1, `Modell 2` = lm2, `Modell 3` = lm3),
+  \(m) {
+    t <- bptest(m)
+    tibble(
+      `BP-observator` = unname(t$statistic),
+      Frihetsgrader   = unname(t$parameter),
+      `p-verdi`       = format_p(t$p.value)
+    )
+  },
+  .id = "Modell"
+) |>
+  gt() |>
+  fmt_number(columns = 2, decimals = 1) |>
+  fmt_number(columns = 3, decimals = 0)
+```
+
+Breusch–Pagan-testen forkaster homoskedastisitet i alle tre modellene (@tbl-bp, p < 0,001), med observatorer på 2 086,8, 2 099,4 og 2 365,1. Vi bruker derfor HC3-robuste standardfeil, beregnet med `vcovHC()` fra `sandwich` og testet med `coeftest()` fra `lmtest`. t-verdiene i @tbl-models er beregnet på denne måten. Også F-testene for kombinerte hypoteser bruker den robuste varianten.
+
+```{r}
+#| label: coeftest-check
+#| include: false
+ct3 <- coeftest(lm3, vcov. = vcovHC(lm3, type = "HC3"))
+ct3[!grepl("year_month", rownames(ct3)), ]
+```
+
+## Sammenligning av modellene
+
+```{r}
+#| label: tbl-ic
+#| tbl-cap: "Modelltilpasning og informasjonskriterier."
+tibble(
+  Modell = c("Modell 1", "Modell 2", "Modell 3"),
+  `Justert R²` = c(summary(lm1)$adj.r.squared, summary(lm2)$adj.r.squared,
+                   summary(lm3)$adj.r.squared),
+  AIC = AIC(lm1, lm2, lm3)$AIC,
+  BIC = BIC(lm1, lm2, lm3)$BIC
+) |>
+  gt() |>
+  fmt_number(columns = 2, decimals = 3) |>
+  fmt_number(columns = 3:4, decimals = 0)
+```
+
+```{r}
+#| label: tbl-wald
+#| tbl-cap: "Robust F-test (HC3) av nestede modeller."
+wt <- waldtest(lm1, lm2, lm3, vcov = function(x) vcovHC(x, type = "HC3"))
+
+tibble(
+  Sammenligning = c("Modell 2 mot 1", "Modell 3 mot 2"),
+  `Ekstra variabler` = abs(wt$Df[2:3]),
+  F = wt$F[2:3],
+  `p-verdi` = format_p(wt$`Pr(>F)`[2:3])
+) |>
+  gt() |>
+  fmt_number(columns = 3, decimals = 1)
+```
+
+@tbl-ic og @tbl-wald sammenligner modellene. Justert R² øker fra 0,731 i modell 1 til 0,829 i modell 2 og 0,832 i modell 3. Den robuste F-testen forkaster at tilleggsvariablene i modell 2 (11 variabler, F = 879,7) og modell 3 (6 variabler, F = 61,2) kan settes lik null, begge med p < 0,001. AIC faller fra 25 015 i modell 1 til 13 490 i modell 2 og 13 060 i modell 3, og BIC fra 25 772 til 14 336 og 13 956. Begge kriteriene foretrekker dermed modell 3, som er den best tilpassede modellen. Forbedringen er imidlertid svært ulik. Overgangen fra modell 1 til 2 senker AIC med 11 525, mens overgangen fra modell 2 til 3 senker den med 430, og justert R² øker bare med 0,003. Nabolagsvariablene forklarer altså mye mer av prisvariasjonen enn miljøvariablene. Med et stort utvalg er det lett å få signifikante forskjeller, så vi vurderer også om fortegn og størrelser er rimelige (se under).
+
+Diagnoseplottene i @fig-diag viser tre ting. For det første faller spredningen i residualene med økende predikert verdi og flater ut ved ca. 11 (Scale-Location), så variansen er størst for de billigste boligene. Det samsvarer med Breusch–Pagan-testen. For det andre har Q-Q-plottet tunge haler, spesielt i den nedre, så flere boliger er solgt for mye mindre eller mye mer enn modellen forventer enn normalfordelingen tilsier. For det tredje er det ingen observasjoner med spesielt høy leverage (alle under 0,03). En liten gruppe med store negative residualer (omtrent −1,5) ved predikert logpris på ca. 12–12,7 er fortsatt synlig.
+
+```{r}
+#| label: fig-diag
+#| fig-cap: "Diagnoseplott for modell 3."
+par(mfrow = c(2, 2))
+plot(lm3)
+par(mfrow = c(1, 1))
+```
+
+## Tolkning av koeffisientene
+
+```{r}
+#| label: tbl-effects
+#| tbl-cap: "Prosentvis prisendring for utvalgte variabler, modell 3."
+tribble(
+  ~term, ~Variabel, ~skala,
+  "age_sold", "Alder ved salg (per år)", 1,
+  "solgt_for_ferdigTRUE", "Solgt før byggeår (mot ferdig bolig)", 1,
+  "garageattached", "Tilbygd garasje (mot ingen garasje)", 1,
+  "dist_CBD", "Avstand til CBD (per km)", 1,
+  "andel_svart", "Andel svarte i tract (per prosentpoeng)", 0.01,
+  "LESSHSPCT", "Andel uten videregående (per prosentpoeng)", 0.01,
+  "andel_arbeidsledig", "Andel arbeidsledige (per prosentpoeng)", 0.01,
+  "PNPL_z", "Nærhet til Superfund (per standardavvik)", 1,
+  "PRMP_z", "Nærhet til RMP-anlegg (per standardavvik)", 1,
+  "PM25_z", "PM2,5 (per standardavvik)", 1
+) |>
+  mutate(
+    Koeffisient = unname(coef(lm3)[term]),
+    `Prisendring (%)` = 100 * (exp(Koeffisient * skala) - 1)
+  ) |>
+  select(Variabel, Koeffisient, `Prisendring (%)`) |>
+  gt() |>
+  fmt_number(columns = 2, decimals = 4) |>
+  fmt_number(columns = 3, decimals = 2)
+```
+
+**Boligegenskaper.** I modell 3 er arealelastisiteten 0,55, så 1 % større boligareal henger sammen med omtrent 0,55 % høyere pris, og elastisiteten for tomtestørrelse er 0,12. Hvert år økt alder ved salg gir omtrent 0,8 % lavere pris. Boliger med tilbygd garasje er solgt for om lag 25 % mer enn boliger uten garasje (frittstående garasje: om lag 29 %), og boliger med to eller flere etasjer for omtrent 12 % mer enn boliger med én etasje. Et ekstra bad henger sammen med omtrent 4,7 % høyere pris. Boliger solgt før byggeåret selges for omtrent 80 % lavere pris enn ellers like boliger (@tbl-effects), noe som er rimelig dersom prisen bare dekker tomten eller en ufullstendig bolig. Alle disse fortegnene er rimelige. Antall rom og soverom har ingen signifikant sammenheng med prisen i modell 2 og 3, og det er forventet, siden de er sterkt korrelert med boligarealet. Arealelastisiteten faller fra 0,61 i modell 1 til 0,55 i modell 3, så en del av arealeffekten i modell 1 skyldes at større boliger ligger i dyrere områder.
+
+**Avstand til CBD.** I oppgave 4 steg medianprisen jevnt med avstanden, fra 25 000 til 118 500 dollar (@tbl-avstand). Etter at vi kontrollerer for boligegenskaper og nabolag, er koeffisienten i modell 2 tilnærmet null (−0,000, t = −0,15), og i modell 3 er den 0,005 (t = 3,9), omtrent 0,5 % høyere pris per km. Prismønsteret fra oppgave 4 skyldes dermed i hovedsak at boligene og nabolagene er ulike, og ikke avstanden i seg selv. At koeffisienten først blir signifikant når miljøvariablene kommer med, kan tyde på at avstand er korrelert med dem.
+
+**Nabolag.** Ett prosentpoeng høyere andel svarte i tracten henger sammen med omtrent 0,7 % lavere pris, mens ett prosentpoeng høyere andel uten videregående utdanning gir omtrent 1,1 % lavere pris og andel arbeidsledige omtrent 0,7 % lavere pris. Ett minutt lengre reisetid til jobb gir omtrent 1 % lavere pris, og 1 000 dollar høyere inntekt per capita omtrent 0,3 % høyere pris. Andel over 64 år og andel asiatiske har positive koeffisienter (omtrent 0,3 % og 0,8 % per prosentpoeng). Dette er betingede sammenhenger som kan gjenspeile nabolagsforskjeller vi ikke måler direkte, og ikke at beboersammensetningen i seg selv påvirker prisen.
+
+**Miljøvariabler.** Ett standardavvik høyere nærhet til Superfund-områder (`PNPL`) henger sammen med 4,4 % høyere pris, og ett standardavvik høyere PM2,5 med 4,2 % høyere pris. Nærhet til anlegg med risikostyringsplan (`PRMP`) gir 3,5 % lavere pris per standardavvik, og det er den eneste av miljøvariablene med det forventede negative fortegnet. Andelen boliger fra før 1960 (1,6 %) og nærhet til avfallsanlegg (0,7 %) har små, positive koeffisienter, og trafikknærhet har ingen sammenheng med prisen (t = −0,47). De positive fortegnene er motsatt av forventningen om at miljøbelastning senker prisen, og tyder på at variablene fanger opp noe annet enn kjøpernes vurdering av miljøkvalitet, for eksempel beliggenhet. @bishop2020 peker på at goder er romlig korrelerte, og at man trenger eksogen variasjon i godet for å tolke estimatene som betalingsvillighet. Miljødataene er dessuten fra 2015, mens salgene er fra 1993–1998, så estimatene må tolkes som sammenhenger og ikke som kausale effekter.
 
 # Oppgave 6
 
+## Behov for tidsdummyer
+
+Salgene strekker seg over flere år, så vi tester om tidsdummyene i `year_month` samlet sett har betydning for prisen. Nullhypotesen er at alle tidsdummykoeffisientene er lik 0. Vi bruker `linearHypothesis()` fra `car` på modell 3 med HC3-robuste standardfeil.
+
+```{r}
+#| label: tbl-tidstest
+#| tbl-cap: "Simultan F-test av tidsdummyene (modell 3, HC3)."
+tt <- linearHypothesis(lm3, matchCoefs(lm3, "year_month"), white.adjust = "hc3")
+
+tibble(
+  `Antall restriksjoner`   = abs(tt$Df[2]),
+  `Residual-frihetsgrader` = tt$Res.Df[2],
+  F                        = tt$F[2],
+  `p-verdi`                = format_p(tt$`Pr(>F)`[2])
+) |>
+  gt() |>
+  fmt_number(columns = 3, decimals = 1)
+```
+
+Testen gir F = 24,7 med 69 og 25 242 frihetsgrader (p < 0,001). Vi forkaster dermed nullhypotesen om at alle tidsdummyene er lik null, og tidsdummyene har samlet sett betydning for prisen. Salgstidspunktet bør derfor være med i modellene, også når vi kontrollerer for boligegenskaper, nabolag og miljø.
+
+## Tolkning av tidsdummyene
+
+Hver tidsdummykoeffisient er forskjellen i logaritmisk pris mellom en bolig solgt i den aktuelle måneden og en ellers lik bolig solgt i referansemåneden januar 1993. Prisforskjellen i prosent er $100(e^{\beta}-1)$. Koeffisientene måler dermed prisnivået over tid etter at vi har kontrollert for boligens egenskaper, nabolaget og miljøet, og ikke bare den rå prisutviklingen. Siden prisene er i løpende dollar, inkluderer utviklingen også generell prisvekst.
 
 
 # Oppgave 7
@@ -591,6 +828,8 @@ Resultatene tyder på at boligstørrelse og prisnivå i nabolaget henger romlig 
 # Oppsummering/konklusjon
 
 
+
+# Referanser
 
 
 

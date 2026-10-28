@@ -602,19 +602,19 @@ Modellene bruker alle 25 351 boliger. Vi fjerner ingen observasjoner, siden rade
 
 ## Valg av modellform
 
-Vi bruker den naturlige logaritmen av salgsprisen som avhengig variabel. Prisene er høyreskjeve (gjennomsnitt 79 013 og median 65 500 dollar, se oppgave 4), og logaritmen gjør fordelingen mer symmetrisk og lar oss tolke koeffisientene som prosentvise prisendringer. Boligareal (`TLA`) og tomtestørrelse (`lotsize`) er også logaritmert (log-log), så koeffisientene er elastisiteter: når boligarealet øker med 1 %, endres prisen med $\beta$ %, alt annet likt. De øvrige variablene står i nivå (log-nivå). For en slik variabel gir én enhets økning en prisendring på omtrent $100\beta$ %, eksakt $100(e^{\beta}-1)$ %. For andelsvariabler målt fra 0 til 1 betyr én prosentpoengs økning omtrent $\beta$ prosent endring i prisen, og for dummyvariabler er $100(e^{\beta}-1)$ % prisforskjellen mot referansekategorien.
+Vi bruker den naturlige logaritmen av salgsprisen som avhengig variabel. Prisene er høyreskjeve (gjennomsnitt 79 013 og median 65 500 dollar, se oppgave 4), og logaritmen gjør fordelingen mer symmetrisk og lar oss tolke koeffisientene som prosentvise prisendringer. Boligareal (`TLA`) og tomtestørrelse (`lotsize`) er også logaritmert (log-log), så koeffisientene er elastisiteter: når boligarealet øker med 1 %, endres prisen med $\beta$ %, alt annet likt. De øvrige variablene står i nivå (log-nivå). For en slik variabel gir én enhets økning en prisendring på omtrent $100\beta$ %, eksakt $100(e^{\beta}-1)$ %. For andelsvariabler målt fra 0 til 1 betyr én prosentpoengs økning omtrent $\beta$ prosent endring i prisen, og for dummyvariabler er $100(e^{\beta}-1)$ % prisforskjellen mot referansekategorien. Tolkningen av log-log-, log-nivå- og dummyvariabler følger Wooldridge (kap. 6 og 7).
 
-Logaritmen er ikke definert for 0. `TLA` (minimum 120) og `lotsize` (minimum 702) er positive, men hvis en variabel kan være 0, kan man bruke $\log(1+x)$ eller beholde den i nivå. Operasjoner som `/` og `+` må omsluttes av `I()` i en formel. Vi har derfor laget `inntekt_1000` (inntekt per capita i 1000 dollar) på forhånd.
+Logaritmen er ikke definert for 0. `TLA` (minimum 120) og `lotsize` (minimum 702) er positive, men hvis en variabel kan være 0, kan man bruke $\log(1+x)$ eller beholde den i nivå. Operasjoner som `/` og `+` må omsluttes av `I()` i en formel. Vi har derfor laget `inntekt_1000` (inntekt per capita i 1000 dollar) på forhånd, som tilsvarer `I(income_pc / 1000)`.
 
 ## Hedoniske modeller
 
-Modellene bygger på hedonisk pristeori. @bishop2020 beskriver at kjøpere velger bolig ut fra boligens egenskaper og stedsbundne goder, og at variasjon i goder blir kapitalisert i boligprisene. Maslianskaia-Pautrel og Baumont (2016) bruker romlige hedoniske modeller til å estimere implisitte priser for miljøegenskaper. Modellene utvides gradvis.
+Modellene bygger på hedonisk pristeori. @bishop2020 beskriver at kjøpere velger bolig ut fra boligens egenskaper og stedsbundne goder, og at variasjon i goder blir kapitalisert i boligprisene. @maslianskaia-pautrel2016 bruker romlige hedoniske modeller til å estimere implisitte priser for miljøegenskaper. Modellene utvides gradvis.
 
 **Modell 1** inneholder bare boligens egenskaper og tidsdummyer (`year_month`). Salgene strekker seg over seks år, og @bishop2020 peker på at prisfunksjonen kan endre seg over tid, og at markedet bør avgrenses til ett byområde over få år.
 
 **Modell 2** legger til avstand til CBD (`dist_CBD`), variabler fra ACS5 og demografiske variabler fra EJScreen som ikke er miljøvariabler. Fra ACS5 tar vi med inntekt per capita, etnisitetsandeler (`andel_hvit` er referansekategori, siden andelene summerer til 1), andel arbeidsledige og gjennomsnittlig reisetid til arbeid (`mwtt`). Fra EJScreen tar vi med andel med lav utdanning, andel over 64 år og andel språklig isolerte. Vi utelater `LOWINCPCT`, `VULEOPCT`, median husholdningsinntekt og fattigdomsandel, siden de i stor grad overlapper med inntekt per capita og etnisitetsandelene. @bishop2020 påpeker at goder er romlig korrelerte, og at utelatte nabolagsforhold kan gi skjeve estimater.
 
-**Modell 3** legger til et utvalg miljøvariabler fra EJScreen: andel boliger bygget før 1960 (`PRE1960PCT`), trafikknærhet (`PTRAF`), nærhet til Superfund-områder (`PNPL`), anlegg med risikostyringsplan (`PRMP`), avfallsanlegg (`PTSDF`) og PM2,5 (`PM25`). Vi utelater `OZONE` og `PWDIS`, som vi vurderer som mindre synlige for kjøpere. @bishop2020 understreker at godet må kunne observeres av kjøperne. Miljødataene er fra 2015, mens salgene er fra 1993–1998, så de fungerer som indikatorer på relativt stabile nabolagsforhold.
+**Modell 3** legger til et utvalg miljøvariabler fra EJScreen: andel boliger bygget før 1960 (`PRE1960PCT`), trafikknærhet (`PTRAF`), nærhet til Superfund-områder (`PNPL`), anlegg med risikostyringsplan (`PRMP`), avfallsanlegg (`PTSDF`) og PM2,5 (`PM25`). Vi utelater `OZONE` og `PWDIS`, som vi vurderer som mindre synlige for kjøpere. Bishop et al. (2020, s. 261) understreker at godet må kunne observeres av kjøperne. @maslianskaia-pautrel2016 inkluderer blant annet støyende veier som miljøattributt, og trafikknærhet (`PTRAF`) er det nærmeste vi har i EJScreen. Miljødataene er fra 2015, mens salgene er fra 1993–1998, så de fungerer som indikatorer på relativt stabile nabolagsforhold.
 
 ```{r}
 #| label: model-estimation
@@ -632,7 +632,7 @@ lm1 <- lm(formula = hmod1, data = lucas_full)
 lm2 <- lm(formula = hmod2, data = lucas_full)
 lm3 <- lm(formula = hmod3, data = lucas_full)
 
-c(nobs(lm1), nobs(lm2), nobs(lm3))   # skal være 25351
+c(nobs(lm1), nobs(lm2), nobs(lm3))   # skal være like (25351)
 ```
 
 ## Regresjonsresultater
@@ -699,20 +699,45 @@ map_dfr(
   fmt_number(columns = 3, decimals = 0)
 ```
 
-Breusch–Pagan-testen forkaster homoskedastisitet i alle tre modellene (@tbl-bp, p < 0,001), med observatorer på 2 086,8, 2 099,4 og 2 365,1. Vi bruker derfor HC3-robuste standardfeil, beregnet med `vcovHC()` fra `sandwich` og testet med `coeftest()` fra `lmtest`. t-verdiene i @tbl-models er beregnet på denne måten. Også F-testene for kombinerte hypoteser bruker den robuste varianten.
+Breusch–Pagan-testen forkaster homoskedastisitet i alle tre modellene (@tbl-bp, p < 0,001), med observatorer på 2 086,8, 2 099,4 og 2 365,1. Vi bruker derfor HC3-robuste standardfeil, beregnet med `vcovHC()` fra `sandwich` og testet med `coeftest()` fra `lmtest`. @tbl-coeftest viser de robuste testene for utvalgte variabler i modell 3, og de er identiske med t-verdiene i @tbl-models. Også F-testene for kombinerte hypoteser bruker den robuste varianten.
 
 ```{r}
-#| label: coeftest-check
-#| include: false
+#| label: tbl-coeftest
+#| tbl-cap: "Robuste (HC3) koeffisienttester for utvalgte variabler, modell 3 (coeftest)."
 ct3 <- coeftest(lm3, vcov. = vcovHC(lm3, type = "HC3"))
-ct3[!grepl("year_month", rownames(ct3)), ]
+
+navn <- c(
+  "log(TLA)" = "log(boligareal)",
+  "age_sold" = "Alder ved salg",
+  "solgt_for_ferdigTRUE" = "Solgt før byggeår (dummy)",
+  "dist_CBD" = "Avstand til CBD (km)",
+  "andel_svart" = "Andel svarte",
+  "LESSHSPCT" = "Andel uten videregående",
+  "PNPL_z" = "Nærhet til Superfund (std.)",
+  "PRMP_z" = "Nærhet til RMP-anlegg (std.)",
+  "PM25_z" = "PM2,5 (std.)"
+)
+
+ct3[names(navn), ] |>
+  as.data.frame() |>
+  rownames_to_column("Variabel") |>
+  mutate(
+    Variabel    = unname(navn[Variabel]),
+    `Pr(>|t|)`  = format_p(`Pr(>|t|)`)
+  ) |>
+  rename(Estimat = Estimate, Standardfeil = `Std. Error`, `t-verdi` = `t value`,
+         `p-verdi` = `Pr(>|t|)`) |>
+  gt() |>
+  fmt_number(columns = 2:3, decimals = 4) |>
+  fmt_number(columns = 4, decimals = 2)
 ```
+
 
 ## Sammenligning av modellene
 
 ```{r}
 #| label: tbl-ic
-#| tbl-cap: "Modelltilpasning og informasjonskriterier."
+#| tbl-cap: "Modelltilpasning og informasjonskriterier (AIC og BIC beregnet med AIC() og BIC())."
 tibble(
   Modell = c("Modell 1", "Modell 2", "Modell 3"),
   `Justert R²` = c(summary(lm1)$adj.r.squared, summary(lm2)$adj.r.squared,
@@ -740,7 +765,7 @@ tibble(
   fmt_number(columns = 3, decimals = 1)
 ```
 
-@tbl-ic og @tbl-wald sammenligner modellene. Justert R² øker fra 0,731 i modell 1 til 0,829 i modell 2 og 0,832 i modell 3. Den robuste F-testen forkaster at tilleggsvariablene i modell 2 (11 variabler, F = 879,7) og modell 3 (6 variabler, F = 61,2) kan settes lik null, begge med p < 0,001. AIC faller fra 25 015 i modell 1 til 13 490 i modell 2 og 13 060 i modell 3, og BIC fra 25 772 til 14 336 og 13 956. Begge kriteriene foretrekker dermed modell 3, som er den best tilpassede modellen. Forbedringen er imidlertid svært ulik. Overgangen fra modell 1 til 2 senker AIC med 11 525, mens overgangen fra modell 2 til 3 senker den med 430, og justert R² øker bare med 0,003. Nabolagsvariablene forklarer altså mye mer av prisvariasjonen enn miljøvariablene. Med et stort utvalg er det lett å få signifikante forskjeller, så vi vurderer også om fortegn og størrelser er rimelige (se under).
+@tbl-ic og @tbl-wald sammenligner modellene. Justert R² øker fra 0,731 i modell 1 til 0,829 i modell 2 og 0,832 i modell 3. Den robuste F-testen forkaster at tilleggsvariablene i modell 2 (11 variabler, F = 879,7) og modell 3 (6 variabler, F = 61,2) kan settes lik null, begge med p < 0,001. AIC faller fra 25 015 i modell 1 til 13 490 i modell 2 og 13 060 i modell 3, og BIC fra 25 772 til 14 336 og 13 956. Begge kriteriene foretrekker dermed modell 3, som er den best tilpassede modellen. Forbedringen er imidlertid svært ulik: overgangen fra modell 1 til 2 senker AIC med 11 525, mens overgangen fra modell 2 til 3 senker den med 430, og justert R² øker bare med 0,003. Nabolagsvariablene forklarer altså mye mer av prisvariasjonen enn miljøvariablene. Med et stort utvalg er det lett å få signifikante forskjeller, så vi vurderer også om fortegn og størrelser er rimelige (se under). Vi tester for romlig autokorrelasjon i residualene fra de tre modellene med Moran's I i oppgave 7 (@tbl-moran-ols).
 
 Diagnoseplottene i @fig-diag viser tre ting. For det første faller spredningen i residualene med økende predikert verdi og flater ut ved ca. 11 (Scale-Location), så variansen er størst for de billigste boligene. Det samsvarer med Breusch–Pagan-testen. For det andre har Q-Q-plottet tunge haler, spesielt i den nedre, så flere boliger er solgt for mye mindre eller mye mer enn modellen forventer enn normalfordelingen tilsier. For det tredje er det ingen observasjoner med spesielt høy leverage (alle under 0,03). En liten gruppe med store negative residualer (omtrent −1,5) ved predikert logpris på ca. 12–12,7 er fortsatt synlig.
 
@@ -786,7 +811,7 @@ tribble(
 
 **Nabolag.** Ett prosentpoeng høyere andel svarte i tracten henger sammen med omtrent 0,7 % lavere pris, mens ett prosentpoeng høyere andel uten videregående utdanning gir omtrent 1,1 % lavere pris og andel arbeidsledige omtrent 0,7 % lavere pris. Ett minutt lengre reisetid til jobb gir omtrent 1 % lavere pris, og 1 000 dollar høyere inntekt per capita omtrent 0,3 % høyere pris. Andel over 64 år og andel asiatiske har positive koeffisienter (omtrent 0,3 % og 0,8 % per prosentpoeng). Dette er betingede sammenhenger som kan gjenspeile nabolagsforskjeller vi ikke måler direkte, og ikke at beboersammensetningen i seg selv påvirker prisen.
 
-**Miljøvariabler.** Ett standardavvik høyere nærhet til Superfund-områder (`PNPL`) henger sammen med 4,4 % høyere pris, og ett standardavvik høyere PM2,5 med 4,2 % høyere pris. Nærhet til anlegg med risikostyringsplan (`PRMP`) gir 3,5 % lavere pris per standardavvik, og det er den eneste av miljøvariablene med det forventede negative fortegnet. Andelen boliger fra før 1960 (1,6 %) og nærhet til avfallsanlegg (0,7 %) har små, positive koeffisienter, og trafikknærhet har ingen sammenheng med prisen (t = −0,47). De positive fortegnene er motsatt av forventningen om at miljøbelastning senker prisen, og tyder på at variablene fanger opp noe annet enn kjøpernes vurdering av miljøkvalitet, for eksempel beliggenhet. @bishop2020 peker på at goder er romlig korrelerte, og at man trenger eksogen variasjon i godet for å tolke estimatene som betalingsvillighet. Miljødataene er dessuten fra 2015, mens salgene er fra 1993–1998, så estimatene må tolkes som sammenhenger og ikke som kausale effekter.
+**Miljøvariabler.** Ett standardavvik høyere nærhet til Superfund-områder (`PNPL`) henger sammen med 4,4 % høyere pris, og ett standardavvik høyere PM2,5 med 4,2 % høyere pris. Nærhet til anlegg med risikostyringsplan (`PRMP`) gir 3,5 % lavere pris per standardavvik, og det er den eneste av miljøvariablene med det forventede negative fortegnet. Andelen boliger fra før 1960 (1,6 %) og nærhet til avfallsanlegg (0,7 %) har små, positive koeffisienter, og trafikknærhet har ingen sammenheng med prisen (t = −0,47). De positive fortegnene er motsatt av forventningen om at miljøbelastning senker prisen, og tyder på at variablene fanger opp noe annet enn kjøpernes vurdering av miljøkvalitet, for eksempel beliggenhet. Bishop et al. (2020, s. 261, 270) peker på at goder er romlig korrelerte, og at man trenger eksogen variasjon i godet for å tolke estimatene som betalingsvillighet. Miljødataene er dessuten fra 2015, mens salgene er fra 1993–1998, så estimatene må tolkes som sammenhenger og ikke som kausale effekter.
 
 # Oppgave 6
 
@@ -818,7 +843,266 @@ Hver tidsdummykoeffisient er forskjellen i logaritmisk pris mellom en bolig solg
 
 # Oppgave 7
 
+## Romlig vektmatrise
 
+```{r}
+#| label: weights
+#| include: false
+coords <- st_coordinates(lucas_full)
+
+nb3  <- knn2nb(knearneigh(coords, k = 3))
+nb10 <- knn2nb(knearneigh(coords, k = 10))
+
+lw3  <- nb2listw(nb3,  style = "W")
+lw10 <- nb2listw(nb10, style = "W")
+
+summary(nb3)    # alle boliger skal ha 3 naboer
+summary(nb10)   # alle boliger skal ha 10 naboer
+
+# datasett uten geometri til de romlige modellene (samme radrekkefølge)
+boligdata <- st_drop_geometry(lucas_full)
+```
+
+Boligene er punktobservasjoner. Vi kunne definert naboer ut fra et avstandskriterium, men bruker i stedet k-nærmeste naboer, som ofte anbefales som et bedre kriterium. Bivand et al. (2013, s. 247–248) diskuterer problemene med et avstandskriterium. I en k-nærmeste-nabomatrise er naboene til hver bolig de k boligene som ligger nærmest, målt som luftlinjeavstand i det projiserte koordinatsystemet (EPSG:2834). Alle boliger får dermed nøyaktig k naboer, uavhengig av om de ligger i tett eller spredt bebygde områder. Ved et avstandskriterium vil antall naboer derimot variere med bebyggelsestettheten, og noen boliger kan få ingen naboer. Relasjonen er ikke symmetrisk, siden bolig A kan være blant de k nærmeste for B uten at B er blant de k nærmeste for A. Vi bruker radstandardiserte vekter (hver nabo får vekt $1/k$), så det romlige laget $Wy$ er gjennomsnittet av naboenes verdier. Vi bruker k = 3, som gir et svært lokalt naboskap, og k = 10, som dekker et noe større område.
+
+## Romlig autokorrelasjon i OLS-residualene
+
+Vi tester om residualene fra de tre hedoniske modellene er romlig autokorrelerte, med `lm.morantest()` fra `spdep`. Nullhypotesen er at det ikke er romlig autokorrelasjon i feilleddet.
+
+```{r}
+#| label: tbl-moran-ols
+#| tbl-cap: "Moran's I-test av OLS-residualene (H0: ingen romlig autokorrelasjon)."
+moran_rad <- function(m, lw, modell, k) {
+  t <- lm.morantest(m, lw)
+  tibble(
+    Modell      = modell,
+    k           = k,
+    `Moran's I` = unname(t$estimate[1]),
+    `z-verdi`   = unname(t$statistic),
+    `p-verdi`   = format_p(t$p.value)
+  )
+}
+
+bind_rows(
+  moran_rad(lm1, lw3,  "Modell 1", 3),
+  moran_rad(lm1, lw10, "Modell 1", 10),
+  moran_rad(lm2, lw3,  "Modell 2", 3),
+  moran_rad(lm2, lw10, "Modell 2", 10),
+  moran_rad(lm3, lw3,  "Modell 3", 3),
+  moran_rad(lm3, lw10, "Modell 3", 10)
+) |>
+  gt() |>
+  fmt_number(columns = 3, decimals = 3) |>
+  fmt_number(columns = 4, decimals = 1)
+```
+
+[Skriv hva @tbl-moran-ols viser: Moran's I for hver modell og k, og om vi forkaster nullhypotesen. Hvis Moran's I synker fra modell 1 til 3, kommenter det.] @fig-moran-ols viser Moran-plottene for residualene fra modell 3, som vi bruker videre.
+
+```{r}
+#| label: fig-moran-ols
+#| fig-cap: "Moran-plott for residualene fra OLS (modell 3), k = 3 (til venstre) og k = 10 (til høyre)."
+#| fig-height: 4
+par(mfrow = c(1, 2))
+moran.plot(residuals(lm3), listw = lw3,  pch = ".", main = "k = 3")
+moran.plot(residuals(lm3), listw = lw10, pch = ".", main = "k = 10")
+par(mfrow = c(1, 1))
+```
+
+[Skriv hva plottene viser: er det en tydelig positiv stigning, og dermed romlig autokorrelasjon i residualene som ikke er forklart av modellen?]
+
+## Romlige modeller
+
+Modellene har samme forklaringsvariabler som modell 3, som inneholder både inntekt og etnisitet. Med $y$ som logaritmen til salgsprisen, $X$ som forklaringsvariablene og $W$ som vektmatrisen er de aktuelle modellene:
+
+- **OLS:** $y = X\beta + \varepsilon$
+- **SEM (romlig feilmodell):** $y = X\beta + u$, med $u = \lambda W u + \varepsilon$
+- **SLX:** $y = X\beta + W X_s \theta + \varepsilon$
+- **SDEM (romlig Durbin-feilmodell):** $y = X\beta + W X_s \theta + u$, med $u = \lambda W u + \varepsilon$
+- **SAR (romlig lagmodell, SLM):** $y = \rho W y + X\beta + \varepsilon$
+
+Her er $WX_s$ de romlig lagrede forklaringsvariablene. Vi bruker opsjonen `Durbin` for å lage romlige lag bare for `log(TLA)`, `log(lotsize)`, `age_sold`, `inntekt_1000`, `andel_svart` og `PM25_z`, slik at vi slipper effekter for tidsdummyene. SEM og SDEM estimeres med `method = "MC"`, som tilnærmer determinanten i likelihood-funksjonen, siden en eksakt beregning blir for tung med 25 351 observasjoner.
+
+```{r}
+#| label: spatial-models
+#| cache: true
+#| include: false
+set.seed(2026)
+
+f3     <- as.formula(hmod3)
+durbin <- ~ log(TLA) + log(lotsize) + age_sold + inntekt_1000 + andel_svart + PM25_z
+
+fit_spatial <- function(lw) {
+  list(
+    slx  = lmSLX(f3, data = boligdata, listw = lw, Durbin = durbin),
+    sem  = errorsarlm(f3, data = boligdata, listw = lw, method = "MC"),
+    sdem = errorsarlm(f3, data = boligdata, listw = lw, Durbin = durbin, method = "MC"),
+    sar  = lagsarlm(f3, data = boligdata, listw = lw, method = "MC")
+  )
+}
+
+m3  <- fit_spatial(lw3)
+m10 <- fit_spatial(lw10)
+```
+
+## Anselins tilnærming: Rao's score-tester
+
+Anselin (1988) tar utgangspunkt i OLS-modellen og bruker Rao's score-tester (Lagrange-multiplikatortester) til å velge mellom OLS, SAR og SEM. Testene er RSerr (romlig feil), RSlag (romlig lag), de robuste variantene adjRSerr og adjRSlag, og SARMA (begge samtidig). Hvis både RSerr og RSlag er signifikante, velger vi modellen med den mest signifikante robuste testen.
+
+```{r}
+#| label: tbl-rs
+#| tbl-cap: "Rao's score-tester på OLS-residualene (modell 3)."
+rs_tab <- function(m, lw, k) {
+  rs <- lm.RStests(m, listw = lw, test = "all")
+  map_dfr(rs, \(t) tibble(
+    Observator = unname(t$statistic),
+    `p-verdi`  = format_p(t$p.value)
+  ), .id = "Test") |>
+    mutate(k = k, .before = 1)
+}
+
+bind_rows(rs_tab(lm3, lw3, 3), rs_tab(lm3, lw10, 10)) |>
+  gt() |>
+  fmt_number(columns = 3, decimals = 1)
+```
+
+[Skriv hva @tbl-rs viser for k = 3 og k = 10: hvilke tester er signifikante, og hva gir de robuste testene? Konkluder om SAR, SEM eller OLS passer best etter Anselins metode.]
+
+## LeSages tilnærming: nestede modeller
+
+Vi betrakter prisdannelsen for boliger som et lokalt fenomen, jf. LeSage (2014): kjøpere sammenligner med salg av lignende boliger i nærheten, og effektene av en boligs egenskaper antas å gjelde nære naboer. Maslianskaia-Pautrel og Baumont (2016) viser at den romlige dimensjonen kan tolkes som lokale eller globale spillovers. Lokale spillovers fanges av SLX og SDEM, mens globale spillovers med tilbakekoblinger fanges av SAR. Vi tester derfor de nestede modellene SDEM, SEM, SLX og OLS med likelihood ratio-tester (`LR.Sarlm()` fra `spatialreg`). SDEM er den mest generelle: den inneholder SEM ($\theta = 0$), SLX ($\lambda = 0$) og OLS ($\theta = 0$ og $\lambda = 0$).
+
+```{r}
+#| label: tbl-lr
+#| tbl-cap: "Likelihood ratio-tester av nestede modeller (LR.Sarlm)."
+lr_rad <- function(stor, liten, navn, k) {
+  t <- LR.Sarlm(stor, liten)
+  tibble(
+    k = k, Test = navn,
+    `LR-observator` = unname(t$statistic),
+    Frihetsgrader   = unname(t$parameter),
+    `p-verdi`       = format_p(t$p.value)
+  )
+}
+
+lr_tab <- function(m, k) {
+  bind_rows(
+    lr_rad(m$sem,  lm3,   "SEM mot OLS (λ = 0)",  k),
+    lr_rad(m$slx,  lm3,   "SLX mot OLS (θ = 0)",  k),
+    lr_rad(m$sdem, m$sem, "SDEM mot SEM (θ = 0)", k),
+    lr_rad(m$sdem, m$slx, "SDEM mot SLX (λ = 0)", k),
+    lr_rad(m$sdem, lm3,   "SDEM mot OLS (θ = λ = 0)", k)
+  )
+}
+
+bind_rows(lr_tab(m3, 3), lr_tab(m10, 10)) |>
+  gt() |>
+  fmt_number(columns = 3, decimals = 1) |>
+  fmt_number(columns = 4, decimals = 0)
+```
+
+```{r}
+#| label: tbl-fit
+#| tbl-cap: "Logaritmisk likelihood, AIC og romlig parameter for OLS og de romlige modellene."
+fit_tab <- function(m, k) {
+  tibble(
+    k = k,
+    Modell = c("OLS", "SLX", "SEM", "SDEM", "SAR"),
+    logLik = c(as.numeric(logLik(lm3)), as.numeric(logLik(m$slx)),
+               as.numeric(logLik(m$sem)), as.numeric(logLik(m$sdem)),
+               as.numeric(logLik(m$sar))),
+    AIC = c(AIC(lm3), AIC(m$slx), AIC(m$sem), AIC(m$sdem), AIC(m$sar)),
+    `λ / ρ` = c(NA, NA, m$sem$lambda, m$sdem$lambda, m$sar$rho)
+  )
+}
+
+bind_rows(fit_tab(m3, 3), fit_tab(m10, 10)) |>
+  gt() |>
+  fmt_number(columns = 3:4, decimals = 0) |>
+  fmt_number(columns = 5, decimals = 3) |>
+  sub_missing(missing_text = "")
+```
+
+[Skriv hva @tbl-lr viser for k = 3 og k = 10: forkastes nullhypotesene? Hvilken modell er best etter de nestede testene (SDEM, SEM, SLX eller OLS)? Bruk også @tbl-fit: hvilken modell har lavest AIC, og hvor stor er λ?]
+
+## Moran-plott for residualene, k = 10
+
+@fig-moran-modeller viser hvor godt hver modell fjerner romlig autokorrelasjon fra residualene når vi bruker k = 10.
+
+```{r}
+#| label: fig-moran-modeller
+#| fig-cap: "Moran-plott for residualene fra OLS og de romlige modellene, k = 10."
+#| fig-height: 7
+par(mfrow = c(2, 3))
+moran.plot(residuals(lm3),      listw = lw10, pch = ".", main = "OLS")
+moran.plot(residuals(m10$slx),  listw = lw10, pch = ".", main = "SLX")
+moran.plot(residuals(m10$sem),  listw = lw10, pch = ".", main = "SEM")
+moran.plot(residuals(m10$sdem), listw = lw10, pch = ".", main = "SDEM")
+moran.plot(residuals(m10$sar),  listw = lw10, pch = ".", main = "SAR")
+par(mfrow = c(1, 1))
+```
+
+```{r}
+#| label: moran-modeller-tall
+#| include: false
+# Moran's I for residualene (til støtte for diskusjonen)
+sapply(
+  list(OLS = lm3, SLX = m10$slx, SEM = m10$sem, SDEM = m10$sdem, SAR = m10$sar),
+  \(m) moran.test(residuals(m), lw10)$estimate[1]
+)
+```
+
+[Skriv hva @fig-moran-modeller viser: hvilke modeller fjerner mest av den romlige autokorrelasjonen, og hvilke etterlater en tydelig positiv stigning? Bruk Moran's I-verdiene fra konsollen.]
+
+## SAR og impacts
+
+I en SAR-modell er koeffisientene ikke marginale effekter, siden en endring i en boligs egenskaper påvirker prisen både i boligen selv og, gjennom tilbakekoblinger, i naboene og tilbake igjen. Vi bruker derfor impacts. Den direkte effekten er effekten av en endring i en bolig på dens egen pris, inkludert tilbakekoblingene. Den indirekte effekten er den samlede effekten på de andre boligenes priser (spillover), og den totale effekten er summen. Maslianskaia-Pautrel og Baumont (2016) viser at den implisitte prisen i en romlig modell er mer enn koeffisienten, og at den kombinerer en tilbakekoblingseffekt og en propagasjonseffekt.
+
+```{r}
+#| label: sar-impacts
+#| cache: true
+#| include: false
+set.seed(2026)
+
+impacts_sar <- function(m, lw) {
+  W  <- as(lw, "CsparseMatrix")
+  tr <- trW(W, type = "MC")
+  impacts(m$sar, tr = tr, R = 200)
+}
+
+imp3  <- impacts_sar(m3,  lw3)
+imp10 <- impacts_sar(m10, lw10)
+```
+
+```{r}
+#| label: tbl-impacts
+#| tbl-cap: "Impacts fra SAR-modellen for utvalgte variabler (z-verdier fra simulering)."
+vars <- c("log(TLA)", "age_sold", "inntekt_1000", "andel_svart", "PM25_z")
+
+imp_tab <- function(imp, k) {
+  s <- summary(imp, zstats = TRUE, short = TRUE)
+  tibble(
+    k = k,
+    Variabel     = vars,
+    Direkte      = imp$res$direct[vars],
+    `z (dir.)`   = s$zmat[vars, 1],
+    Indirekte    = imp$res$indirect[vars],
+    `z (indir.)` = s$zmat[vars, 2],
+    Totalt       = imp$res$total[vars],
+    `z (tot.)`   = s$zmat[vars, 3]
+  )
+}
+
+bind_rows(imp_tab(imp3, 3), imp_tab(imp10, 10)) |>
+  gt() |>
+  fmt_number(columns = c(3, 5, 7), decimals = 4) |>
+  fmt_number(columns = c(4, 6, 8), decimals = 1)
+```
+
+[Skriv hva @tbl-impacts viser for to-tre av variablene: størrelsen på de direkte, indirekte og totale effektene og hva de betyr i prosent. Sammenlign med OLS-koeffisientene i @tbl-models.]
+
+## Valg av romlig modell
+
+[Skriv en kort konklusjon: hva viser Moran's I-testen, hvilken modell velger Anselins metode (SAR, SEM eller OLS), hvilken velger LeSages metode (SDEM, SEM, SLX eller OLS), og hvilken fjerner mest romlig autokorrelasjon i residualene? Er de to metodene enige, og er k = 3 og k = 10 enige?]
 
 
 # Diskusjon av resultater

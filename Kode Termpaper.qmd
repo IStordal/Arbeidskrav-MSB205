@@ -572,6 +572,29 @@ Høy-høy-klyngene ligger samlet i den vestlige, nordvestlige og sørvestlige de
 Resultatene tyder på at boligstørrelse og prisnivå i nabolaget henger romlig sammen. Om det også finnes romlig autokorrelasjon i residualene fra de hedoniske modellene, tester vi senere med Moran's I.
 
 
+# Oppgave 5
+
+
+
+# Oppgave 6
+
+
+
+# Oppgave 7
+
+
+
+# Diskusjon av resultater
+
+
+
+# Oppsummering/konklusjon
+
+
+
+
+
+
 
 # Fra forelesningen:
 innhenting qv ACS data: Må endre på variables. ellers kan alt av koden stå

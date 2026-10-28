@@ -94,7 +94,6 @@ class(lucas_house)         # skal vise "sf"
 names(lucas_house)         # sjekk at year_month er med
 ```
 
-
 ## iv
 
 ```{r}
@@ -104,7 +103,6 @@ lucas_house <- lucas_house |>
 
 st_crs(lucas_house)$input  # skal vise EPSG:2834
 ```
-
 
 ## v & vi
 
@@ -132,7 +130,6 @@ lucas_house <- lucas_house |>
 summary(lucas_house$dist_CBD)
 nrow(lucas_house)   # skal være 25357
 ```
-
 
 # Oppgave 2
 
@@ -287,6 +284,7 @@ acs5_travel <- get_acs(
   geometry = FALSE
 )
 ```
+
 ```{r}
 #| label: acs-other-download
 # Median husholdningsinntekt
@@ -418,6 +416,7 @@ census_full <- census_full |>
 
 nrow(census_full)   # skal være 127
 ```
+
 ## vi
 
 ```{r}
@@ -427,6 +426,7 @@ census_full <- census_full |>
 
 st_crs(census_full)$input   # skal vise EPSG:2834
 ```
+
 ## vii
 
 ```{r}
@@ -505,19 +505,20 @@ st_write(
 )
 ```
 
-
 # Oppgave 4
 
-Bildene er generert og ser bra ut tror jeg? Må sjekke og høre med KG evt om de er gode nok.
-
-
+Bildene er generert og ser bra ut tror jeg?
+Må sjekke og høre med KG evt om de er gode nok.
 
 # Fra forelesningen:
-innhenting qv ACS data: Må endre på variables. ellers kan alt av koden stå
+
+innhenting qv ACS data: Må endre på variables.
+ellers kan alt av koden stå
 
 På variabler som skal hentes inn: På linken for mer info kan man endre siste ledd for å se info om den vairabelen man ønsker
 
-Forelesningsnotatene om Lucas county er viktig mtp. å koble boligdata og områdedata.
+Forelesningsnotatene om Lucas county er viktig mtp.
+å koble boligdata og områdedata.
 
 skal sitte igjen med antall boligsalg etter sammenslåingen av boligdata og områdedata
 
@@ -526,5 +527,3 @@ For avstand til CBD så finner vi akkurat det vi trenger i forelesningsnotatene 
 Etter innlevering, bør vi gjøre det repoet privat.
 
 Ha et eget dokument for kode, og et eget for selve artikkelen
-
-

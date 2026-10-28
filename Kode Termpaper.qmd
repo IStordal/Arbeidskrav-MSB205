@@ -822,7 +822,7 @@ Hver tidsdummykoeffisient er forskjellen i logaritmisk pris mellom en bolig solg
 
 # Diskusjon av resultater
 
-### 1. Økonomisk tolkning av den hedoniske boligprismodellen
+### i. Økonomisk tolkning av den hedoniske boligprismodellen
 
 En hedonisk boligprismodell brukes for å se på hvilke faktorer som påvirker prisen på en bolig. Tanken er at en bolig består av flere ulike egenskaper, for eksempel størrelse, beliggenhet, nabolag og miljøforhold. Disse egenskapene kan ha ulik betydning for hvor mye en bolig blir solgt for [@maslianskaia-pautrel2016].
 
@@ -830,7 +830,7 @@ Koeffisientene i modellen kan derfor brukes til å si noe om hvor mye boligprise
 
 Selv om OLS, SEM, SAR, SLX og SDEM brukes til å undersøke den samme sammenhengen mellom boligegenskaper og boligpris, tar modellene hensyn til romlige sammenhenger på forskjellige måter. I OLS ser vi hovedsakelig på sammenhengen mellom egenskapene til boligen og boligprisen. SEM tar i tillegg hensyn til romlig sammenheng i forhold som ikke er direkte inkludert i modellen. SAR tar hensyn til at boligprisen på én bolig kan henge sammen med prisene på boliger i nærheten. SLX og SDEM tar også hensyn til at egenskapene til nærliggende boliger eller områder kan påvirke boligprisen. Dette betyr at tolkningen av den implisitte prisen kan være forskjellig avhengig av hvilken spatial modell som brukes [@maslianskaia-pautrel2016].
 
-### 2. Hvorfor trenger vi spatiale regresjonsmodeller?
+### ii. Hvorfor trenger vi spatiale regresjonsmodeller?
 
 Spatiale regresjonsmodeller er nødvendige fordi boliger som ligger nær hverandre ofte kan være påvirket av de samme forholdene. Prisen på én bolig kan også henge sammen med prisene på boliger i nærheten. Det betyr at boligene ikke nødvendigvis er uavhengige av hverandre geografisk [@maslianskaia-pautrel2016].
 
@@ -838,7 +838,7 @@ Hvis vi ikke tar hensyn til dette, kan en vanlig OLS-modell gi et misvisende bil
 
 De ulike modellene tar hensyn til dette på forskjellige måter. SEM tar hensyn til spatial sammenheng i feilleddene, mens SAR tar hensyn til at boligprisen kan påvirkes av prisene på boliger i nærheten. SLX og SDEM tar også hensyn til at egenskaper ved nærliggende boliger eller områder kan påvirke boligprisen [@maslianskaia-pautrel2016].
 
-### 3. Valg av spatial modell
+### iii. Valg av spatial modell
 
 @maslianskaia-pautrel2016 viser til tre forskjellige metoder for å velge hvilken spatial modell som passer best: Specific-to-General, General-to-Specific og Story approach.
 
@@ -850,7 +850,7 @@ Den siste metoden er Story approach. Her velger man modellen ut fra økonomisk t
 
 I denne oppgaven har vi brukt både Specific-to-General og General-to-Specific. Rao's Score-testene brukes for å undersøke om SAR eller SEM passer bedre enn OLS, mens likelihood ratio-testene brukes for å sammenligne de mer generelle og enklere spatiale modellene.
 
-### 4. Tolkning av koeffisientene
+### iv. Tolkning av koeffisientene
 
 For å sammenligne modellene skal vi velge to variabler som går igjen i modellene vi har estimert. Her kan vi for eksempel bruke `dist_CBD` og en inntektsvariabel.
 
@@ -863,7 +863,7 @@ I SLX og SDEM må vi også se på effekten fra nærliggende boliger eller områd
 Det som skal settes inn her senere:
 Koeffisientene til de to valgte variablene fra oppgave 5 og 7, og en kort forklaring på hva de betyr i hver modell.
 
-### 5. Signifikans, fortegn og størrelse
+### v. Signifikans, fortegn og størrelse
 
 Her skal vi bruke de samme to variablene som i punkt 4 og sammenligne resultatene mellom modellene.
 
@@ -876,7 +876,7 @@ Det er også interessant å se om resultatene endrer seg mellom modellene. Hvis 
 Det som skal settes inn her senere:
 Koeffisient, p-verdi eller signifikansnivå, fortegn og størrelse på effekten for de to valgte variablene fra oppgave 5 og 7. Deretter vurderer vi om resultatene virker rimelige og om de endrer seg mellom OLS, SEM, SAR, SLX og SDEM.
 
-### 6. Spatial impacts i SAR-modellen
+### vi. Spatial impacts i SAR-modellen
 
 I SAR-modellen kan en endring i én bolig påvirke andre boliger i nærheten. Denne effekten kan deretter spre seg videre gjennom boligmarkedet. Det er dette vi mener med spatial impacts [@maslianskaia-pautrel2016].
 

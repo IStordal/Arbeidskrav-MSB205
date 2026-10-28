@@ -92,7 +92,7 @@ levels(house$year_month)
 lucas_house <- st_as_sf(house)
 
 class(lucas_house)         # skal vise "sf"
-names(lucas_house)         # sjekk at year_month er med
+names(lucas_house)         
 ```
 
 ## iv
@@ -114,7 +114,6 @@ CBD_ll <- st_point(c(-83.537778, 41.652778), dim = "XY") |>
   st_sfc() |>
   st_set_crs(4326)
 
-# Konverter til samme projeksjon som boligdataene
 CBD <- CBD_ll |>
   st_transform(2834)
 ```
@@ -145,7 +144,6 @@ nrow(lc_ejscreen_map)
 ## ii
 
 ```{r}
-# Foreslår at dere kaller kartet som inneholder dataene for lc_ejscreen_map
 lc_ejscreen_map <- lc_ejscreen_map |> 
   select(
     ID, # Census FIPS code for block group
@@ -215,7 +213,7 @@ nrow(lucas_house)   # før (25357)
 lucas_house <- lucas_house |>
   st_intersection(lc_ejscreen_map)
 
-nrow(lucas_house)   # etter: litt færre er forventet
+nrow(lucas_house)   
 names(lucas_house)
 ```
 
@@ -399,7 +397,7 @@ census_full <- acs5_income |>
   left_join(emp,    by = "GEOID") |>
   left_join(pov,    by = "GEOID")
 
-nrow(census_full)   # skal være 128
+nrow(census_full)   
 ```
 
 ## v
@@ -415,7 +413,7 @@ census_full |>
 census_full <- census_full |>
   filter(!is.na(income_pc))
 
-nrow(census_full)   # skal være 127
+nrow(census_full) 
 ```
 
 ## vi
@@ -450,7 +448,7 @@ nrow(lucas_house)   # før: 25352
 lucas_full <- lucas_house |>
   st_intersection(census_full)
 
-nrow(lucas_full)    # etter: litt færre
+nrow(lucas_full)  
 names(lucas_full)
 ```
 

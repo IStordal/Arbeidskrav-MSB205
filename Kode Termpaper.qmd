@@ -614,7 +614,7 @@ Modellene bygger på hedonisk pristeori. @bishop2020 beskriver at kjøpere velge
 
 **Modell 2** legger til avstand til CBD (`dist_CBD`), variabler fra ACS5 og demografiske variabler fra EJScreen som ikke er miljøvariabler. Fra ACS5 tar vi med inntekt per capita, etnisitetsandeler (`andel_hvit` er referansekategori, siden andelene summerer til 1), andel arbeidsledige og gjennomsnittlig reisetid til arbeid (`mwtt`). Fra EJScreen tar vi med andel med lav utdanning, andel over 64 år og andel språklig isolerte. Vi utelater `LOWINCPCT`, `VULEOPCT`, median husholdningsinntekt og fattigdomsandel, siden de i stor grad overlapper med inntekt per capita og etnisitetsandelene. @bishop2020 påpeker at goder er romlig korrelerte, og at utelatte nabolagsforhold kan gi skjeve estimater.
 
-**Modell 3** legger til et utvalg miljøvariabler fra EJScreen: andel boliger bygget før 1960 (`PRE1960PCT`), trafikknærhet (`PTRAF`), nærhet til Superfund-områder (`PNPL`), anlegg med risikostyringsplan (`PRMP`), avfallsanlegg (`PTSDF`) og PM2,5 (`PM25`). Vi utelater `OZONE` og `PWDIS`, som vi vurderer som mindre synlige for kjøpere. Bishop et al. (2020, s. 261) understreker at godet må kunne observeres av kjøperne. @maslianskaia-pautrel2016 inkluderer blant annet støyende veier som miljøattributt, og trafikknærhet (`PTRAF`) er det nærmeste vi har i EJScreen. Miljødataene er fra 2015, mens salgene er fra 1993–1998, så de fungerer som indikatorer på relativt stabile nabolagsforhold.
+**Modell 3** legger til et utvalg miljøvariabler fra EJScreen: andel boliger bygget før 1960 (`PRE1960PCT`), trafikknærhet (`PTRAF`), nærhet til Superfund-områder (`PNPL`), anlegg med risikostyringsplan (`PRMP`), avfallsanlegg (`PTSDF`) og PM2,5 (`PM25`). Vi utelater `OZONE` og `PWDIS`, som vi vurderer som mindre synlige for kjøpere. @bishop2020 understreker at godet må kunne observeres av kjøperne. @maslianskaia-pautrel2016 inkluderer blant annet støyende veier som miljøattributt, og trafikknærhet (`PTRAF`) er det nærmeste vi har i EJScreen. Miljødataene er fra 2015, mens salgene er fra 1993–1998, så de fungerer som indikatorer på relativt stabile nabolagsforhold.
 
 ```{r}
 #| label: model-estimation
@@ -811,7 +811,7 @@ tribble(
 
 **Nabolag.** Ett prosentpoeng høyere andel svarte i tracten henger sammen med omtrent 0,7 % lavere pris, mens ett prosentpoeng høyere andel uten videregående utdanning gir omtrent 1,1 % lavere pris og andel arbeidsledige omtrent 0,7 % lavere pris. Ett minutt lengre reisetid til jobb gir omtrent 1 % lavere pris, og 1 000 dollar høyere inntekt per capita omtrent 0,3 % høyere pris. Andel over 64 år og andel asiatiske har positive koeffisienter (omtrent 0,3 % og 0,8 % per prosentpoeng). Dette er betingede sammenhenger som kan gjenspeile nabolagsforskjeller vi ikke måler direkte, og ikke at beboersammensetningen i seg selv påvirker prisen.
 
-**Miljøvariabler.** Ett standardavvik høyere nærhet til Superfund-områder (`PNPL`) henger sammen med 4,4 % høyere pris, og ett standardavvik høyere PM2,5 med 4,2 % høyere pris. Nærhet til anlegg med risikostyringsplan (`PRMP`) gir 3,5 % lavere pris per standardavvik, og det er den eneste av miljøvariablene med det forventede negative fortegnet. Andelen boliger fra før 1960 (1,6 %) og nærhet til avfallsanlegg (0,7 %) har små, positive koeffisienter, og trafikknærhet har ingen sammenheng med prisen (t = −0,47). De positive fortegnene er motsatt av forventningen om at miljøbelastning senker prisen, og tyder på at variablene fanger opp noe annet enn kjøpernes vurdering av miljøkvalitet, for eksempel beliggenhet. Bishop et al. (2020, s. 261, 270) peker på at goder er romlig korrelerte, og at man trenger eksogen variasjon i godet for å tolke estimatene som betalingsvillighet. Miljødataene er dessuten fra 2015, mens salgene er fra 1993–1998, så estimatene må tolkes som sammenhenger og ikke som kausale effekter.
+**Miljøvariabler.** Ett standardavvik høyere nærhet til Superfund-områder (`PNPL`) henger sammen med 4,4 % høyere pris, og ett standardavvik høyere PM2,5 med 4,2 % høyere pris. Nærhet til anlegg med risikostyringsplan (`PRMP`) gir 3,5 % lavere pris per standardavvik, og det er den eneste av miljøvariablene med det forventede negative fortegnet. Andelen boliger fra før 1960 (1,6 %) og nærhet til avfallsanlegg (0,7 %) har små, positive koeffisienter, og trafikknærhet har ingen sammenheng med prisen (t = −0,47). De positive fortegnene er motsatt av forventningen om at miljøbelastning senker prisen, og tyder på at variablene fanger opp noe annet enn kjøpernes vurdering av miljøkvalitet, for eksempel beliggenhet. @bishop2020 peker på at goder er romlig korrelerte, og at man trenger eksogen variasjon i godet for å tolke estimatene som betalingsvillighet. Miljødataene er dessuten fra 2015, mens salgene er fra 1993–1998, så estimatene må tolkes som sammenhenger og ikke som kausale effekter.
 
 # Oppgave 6
 
@@ -840,7 +840,6 @@ Testen gir F = 24,7 med 69 og 25 242 frihetsgrader (p < 0,001). Vi forkaster der
 
 Hver tidsdummykoeffisient er forskjellen i logaritmisk pris mellom en bolig solgt i den aktuelle måneden og en ellers lik bolig solgt i referansemåneden januar 1993. Prisforskjellen i prosent er $100(e^{\beta}-1)$. Koeffisientene måler dermed prisnivået over tid etter at vi har kontrollert for boligens egenskaper, nabolaget og miljøet, og ikke bare den rå prisutviklingen. Siden prisene er i løpende dollar, inkluderer utviklingen også generell prisvekst.
 
-
 # Oppgave 7
 
 ## Romlig vektmatrise
@@ -856,14 +855,11 @@ nb10 <- knn2nb(knearneigh(coords, k = 10))
 lw3  <- nb2listw(nb3,  style = "W")
 lw10 <- nb2listw(nb10, style = "W")
 
-summary(nb3)    # alle boliger skal ha 3 naboer
-summary(nb10)   # alle boliger skal ha 10 naboer
-
 # datasett uten geometri til de romlige modellene (samme radrekkefølge)
 boligdata <- st_drop_geometry(lucas_full)
 ```
 
-Boligene er punktobservasjoner. Vi kunne definert naboer ut fra et avstandskriterium, men bruker i stedet k-nærmeste naboer, som ofte anbefales som et bedre kriterium. Bivand et al. (2013, s. 247–248) diskuterer problemene med et avstandskriterium. I en k-nærmeste-nabomatrise er naboene til hver bolig de k boligene som ligger nærmest, målt som luftlinjeavstand i det projiserte koordinatsystemet (EPSG:2834). Alle boliger får dermed nøyaktig k naboer, uavhengig av om de ligger i tett eller spredt bebygde områder. Ved et avstandskriterium vil antall naboer derimot variere med bebyggelsestettheten, og noen boliger kan få ingen naboer. Relasjonen er ikke symmetrisk, siden bolig A kan være blant de k nærmeste for B uten at B er blant de k nærmeste for A. Vi bruker radstandardiserte vekter (hver nabo får vekt $1/k$), så det romlige laget $Wy$ er gjennomsnittet av naboenes verdier. Vi bruker k = 3, som gir et svært lokalt naboskap, og k = 10, som dekker et noe større område.
+Boligene er punktobservasjoner. Vi kunne definert naboer ut fra et avstandskriterium, men bruker i stedet k-nærmeste naboer, som ofte anbefales som et bedre kriterium. @bivand2018 diskuterer problemene med et avstandskriterium. I en k-nærmeste-nabomatrise er naboene til hver bolig de k boligene som ligger nærmest, målt som luftlinjeavstand i det projiserte koordinatsystemet (EPSG:2834). Alle boliger får dermed nøyaktig k naboer, uavhengig av om de ligger i tett eller spredt bebygde områder. Ved et avstandskriterium vil antall naboer derimot variere med bebyggelsestettheten, og noen boliger kan få ingen naboer. Relasjonen er ikke symmetrisk, siden bolig A kan være blant de k nærmeste for B uten at B er blant de k nærmeste for A. Vi bruker radstandardiserte vekter (hver nabo får vekt $1/k$), så det romlige laget $Wy$ er gjennomsnittet av naboenes verdier. Vi bruker k = 3, som gir et svært lokalt naboskap, og k = 10, som dekker et noe større område.
 
 ## Romlig autokorrelasjon i OLS-residualene
 
@@ -896,19 +892,17 @@ bind_rows(
   fmt_number(columns = 4, decimals = 1)
 ```
 
-[Skriv hva @tbl-moran-ols viser: Moran's I for hver modell og k, og om vi forkaster nullhypotesen. Hvis Moran's I synker fra modell 1 til 3, kommenter det.] @fig-moran-ols viser Moran-plottene for residualene fra modell 3, som vi bruker videre.
+@tbl-moran-ols viser at Moran's I for OLS-residualene er positiv og svært signifikant for alle tre modellene og begge vektmatrisene (p < 0,001), så nullhypotesen om ingen romlig autokorrelasjon forkastes hver gang. Verdien er høyest i modell 1 (0,494 med k = 3 og 0,467 med k = 10) og faller til 0,377 og 0,333 i modell 2 og til 0,369 og 0,325 i modell 3. Nabolagsvariablene i modell 2 fanger altså opp en del av den romlige strukturen, mens miljøvariablene i modell 3 bidrar lite, og en stor del av autokorrelasjonen gjenstår i alle modellene.
 
 ```{r}
 #| label: fig-moran-ols
-#| fig-cap: "Moran-plott for residualene fra OLS (modell 3), k = 3 (til venstre) og k = 10 (til høyre)."
+#| fig-cap: "Moran-plott for residualene fra OLS (modell 3), k = 10."
 #| fig-height: 4
-par(mfrow = c(1, 2))
-moran.plot(residuals(lm3), listw = lw3,  pch = ".", main = "k = 3")
-moran.plot(residuals(lm3), listw = lw10, pch = ".", main = "k = 10")
-par(mfrow = c(1, 1))
+moran.plot(residuals(lm3), listw = lw10, pch = ".", labels = FALSE,
+           xlab = "Residual", ylab = "Romlig lagget residual")
 ```
 
-[Skriv hva plottene viser: er det en tydelig positiv stigning, og dermed romlig autokorrelasjon i residualene som ikke er forklart av modellen?]
+Moran-plottet i @fig-moran-ols har en tydelig positiv stigning: boliger som er solgt for mer enn modellen forventer, ligger nær andre boliger med positive residualer, og omvendt. Det tyder på at det finnes romlig strukturerte forhold som modellen ikke forklarer, og vi går derfor videre med romlige regresjoner.
 
 ## Romlige modeller
 
@@ -920,7 +914,8 @@ Modellene har samme forklaringsvariabler som modell 3, som inneholder både innt
 - **SDEM (romlig Durbin-feilmodell):** $y = X\beta + W X_s \theta + u$, med $u = \lambda W u + \varepsilon$
 - **SAR (romlig lagmodell, SLM):** $y = \rho W y + X\beta + \varepsilon$
 
-Her er $WX_s$ de romlig lagrede forklaringsvariablene. Vi bruker opsjonen `Durbin` for å lage romlige lag bare for `log(TLA)`, `log(lotsize)`, `age_sold`, `inntekt_1000`, `andel_svart` og `PM25_z`, slik at vi slipper effekter for tidsdummyene. SEM og SDEM estimeres med `method = "MC"`, som tilnærmer determinanten i likelihood-funksjonen, siden en eksakt beregning blir for tung med 25 351 observasjoner.
+Her er $WX_s$ de romlig lagrede forklaringsvariablene. Vi bruker opsjonen `Durbin` for å lage romlige lag bare for `log(TLA)`, `log(lotsize)`, `age_sold`, `inntekt_1000`, `andel_svart` og `PM25_z`, slik at vi slipper effekter for tidsdummyene. SEM og SDEM estimeres med `method = "MC"`, som tilnærmer determinanten i likelihood-funksjonen, siden en eksakt beregning blir for tung med 25 351 observasjoner. Av samme grunn bruker vi `method = "MC"` for SAR.
+
 
 ```{r}
 #| label: spatial-models
@@ -944,9 +939,10 @@ m3  <- fit_spatial(lw3)
 m10 <- fit_spatial(lw10)
 ```
 
+
 ## Anselins tilnærming: Rao's score-tester
 
-Anselin (1988) tar utgangspunkt i OLS-modellen og bruker Rao's score-tester (Lagrange-multiplikatortester) til å velge mellom OLS, SAR og SEM. Testene er RSerr (romlig feil), RSlag (romlig lag), de robuste variantene adjRSerr og adjRSlag, og SARMA (begge samtidig). Hvis både RSerr og RSlag er signifikante, velger vi modellen med den mest signifikante robuste testen.
+@anselin1988 tar utgangspunkt i OLS-modellen og bruker Rao's score-tester (Lagrange-multiplikatortester) til å velge mellom OLS, SAR og SEM. Testene er RSerr (romlig feil), RSlag (romlig lag), de robuste variantene adjRSerr og adjRSlag, og SARMA (begge samtidig). Hvis både RSerr og RSlag er signifikante, velger vi modellen med den mest signifikante robuste testen.
 
 ```{r}
 #| label: tbl-rs
@@ -965,11 +961,11 @@ bind_rows(rs_tab(lm3, lw3, 3), rs_tab(lm3, lw10, 10)) |>
   fmt_number(columns = 3, decimals = 1)
 ```
 
-[Skriv hva @tbl-rs viser for k = 3 og k = 10: hvilke tester er signifikante, og hva gir de robuste testene? Konkluder om SAR, SEM eller OLS passer best etter Anselins metode.]
+@tbl-rs viser at både RSerr og RSlag er svært signifikante for begge vektmatrisene, så de enkle testene kan ikke skille mellom en romlig lagmodell og en romlig feilmodell. Vi ser derfor på de robuste testene. Med k = 3 er adjRSlag (1 315,9) større enn adjRSerr (526,9), noe som peker mot SAR. Med k = 10 er forholdet motsatt, med adjRSerr på 4 936,2 mot adjRSlag på 1 757,3, noe som peker mot SEM. Begge de robuste testene er signifikante for begge vektmatrisene, og SARMA-testen er svært stor (7 255,1 og 16 562,4), så det er tegn til både lag- og feilleddsavhengighet. Anselins tilnærming gir dermed ikke ett svar som gjelder for begge k: OLS forkastes i alle tilfeller, og valget faller på SAR med k = 3 og SEM med k = 10. Dette støttes av AIC i @tbl-fit. Med k = 3 har SAR lavere AIC enn SEM (7 054 mot 7 512), og med k = 10 har SEM lavere AIC enn SAR (5 255 mot 5 644).
 
 ## LeSages tilnærming: nestede modeller
 
-Vi betrakter prisdannelsen for boliger som et lokalt fenomen, jf. LeSage (2014): kjøpere sammenligner med salg av lignende boliger i nærheten, og effektene av en boligs egenskaper antas å gjelde nære naboer. Maslianskaia-Pautrel og Baumont (2016) viser at den romlige dimensjonen kan tolkes som lokale eller globale spillovers. Lokale spillovers fanges av SLX og SDEM, mens globale spillovers med tilbakekoblinger fanges av SAR. Vi tester derfor de nestede modellene SDEM, SEM, SLX og OLS med likelihood ratio-tester (`LR.Sarlm()` fra `spatialreg`). SDEM er den mest generelle: den inneholder SEM ($\theta = 0$), SLX ($\lambda = 0$) og OLS ($\theta = 0$ og $\lambda = 0$).
+Vi betrakter prisdannelsen for boliger som et lokalt fenomen, jf. @lesage2014: kjøpere sammenligner med salg av lignende boliger i nærheten, og effektene av en boligs egenskaper antas å gjelde nære naboer. @maslianskaia-pautrel2016 viser at den romlige dimensjonen kan tolkes som lokale eller globale spillovers. Lokale spillovers fanges av SLX og SDEM, mens globale spillovers med tilbakekoblinger fanges av SAR. Vi tester derfor de nestede modellene SDEM, SEM, SLX og OLS med likelihood ratio-tester (`LR.Sarlm()` fra `spatialreg`). SDEM er den mest generelle av dem: den inneholder SEM ($\theta = 0$), SLX ($\lambda = 0$) og OLS ($\theta = 0$ og $\lambda = 0$).
 
 ```{r}
 #| label: tbl-lr
@@ -989,8 +985,7 @@ lr_tab <- function(m, k) {
     lr_rad(m$sem,  lm3,   "SEM mot OLS (λ = 0)",  k),
     lr_rad(m$slx,  lm3,   "SLX mot OLS (θ = 0)",  k),
     lr_rad(m$sdem, m$sem, "SDEM mot SEM (θ = 0)", k),
-    lr_rad(m$sdem, m$slx, "SDEM mot SLX (λ = 0)", k),
-    lr_rad(m$sdem, lm3,   "SDEM mot OLS (θ = λ = 0)", k)
+    lr_rad(m$sdem, m$slx, "SDEM mot SLX (λ = 0)", k)
   )
 }
 
@@ -1002,14 +997,11 @@ bind_rows(lr_tab(m3, 3), lr_tab(m10, 10)) |>
 
 ```{r}
 #| label: tbl-fit
-#| tbl-cap: "Logaritmisk likelihood, AIC og romlig parameter for OLS og de romlige modellene."
+#| tbl-cap: "AIC og romlig parameter (λ eller ρ) for OLS og de romlige modellene."
 fit_tab <- function(m, k) {
   tibble(
     k = k,
     Modell = c("OLS", "SLX", "SEM", "SDEM", "SAR"),
-    logLik = c(as.numeric(logLik(lm3)), as.numeric(logLik(m$slx)),
-               as.numeric(logLik(m$sem)), as.numeric(logLik(m$sdem)),
-               as.numeric(logLik(m$sar))),
     AIC = c(AIC(lm3), AIC(m$slx), AIC(m$sem), AIC(m$sdem), AIC(m$sar)),
     `λ / ρ` = c(NA, NA, m$sem$lambda, m$sdem$lambda, m$sar$rho)
   )
@@ -1017,12 +1009,12 @@ fit_tab <- function(m, k) {
 
 bind_rows(fit_tab(m3, 3), fit_tab(m10, 10)) |>
   gt() |>
-  fmt_number(columns = 3:4, decimals = 0) |>
-  fmt_number(columns = 5, decimals = 3) |>
+  fmt_number(columns = 3, decimals = 0) |>
+  fmt_number(columns = 4, decimals = 3) |>
   sub_missing(missing_text = "")
 ```
 
-[Skriv hva @tbl-lr viser for k = 3 og k = 10: forkastes nullhypotesene? Hvilken modell er best etter de nestede testene (SDEM, SEM, SLX eller OLS)? Bruk også @tbl-fit: hvilken modell har lavest AIC, og hvor stor er λ?]
+@tbl-lr viser at alle nullhypotesene forkastes på 0,1 %-nivå for begge vektmatrisene. Det romlige feilleddet kan ikke utelates (SEM mot OLS: LR = 5 550,0 med k = 3 og 7 807,0 med k = 10), og det kan heller ikke de romlig laggede forklaringsvariablene (SLX mot OLS: 890,3 og 1 114,1 med seks frihetsgrader). SDEM foretrekkes både framfor SEM (θ = 0 forkastes: LR = 634,8 og 389,6 med seks frihetsgrader) og framfor SLX (λ = 0 forkastes: LR = 5 294,5 og 7 082,5 med én frihetsgrad). SDEM er dermed den beste av de nestede modellene for begge k. @tbl-fit gir samme rangering etter AIC: SDEM har lavest AIC (6 890 med k = 3 og 4 878 med k = 10), deretter SEM, SLX og OLS (13 060). SAR er ikke nestet i SDEM og kan ikke testes med LR, men SDEM har også lavere AIC enn SAR (7 054 og 5 644). Den romlige feilparameteren λ er stor (0,500 i SEM og 0,480 i SDEM med k = 3, og 0,722 og 0,692 med k = 10), og ρ i SAR er 0,400 og 0,531. Feilleddsavhengigheten forklarer langt mer enn de laggede forklaringsvariablene, siden LR-statistikken for SEM mot OLS er omtrent seks til sju ganger så stor som for SLX mot OLS. Det tyder på at mye av den romlige avhengigheten skyldes uobserverte nabolagsforhold og ikke spillovers fra naboenes målte egenskaper. Alle de romlige modellene har dessuten lavere AIC med k = 10 enn med k = 3, så ti naboer ser ut til å beskrive den romlige strukturen bedre.
 
 ## Moran-plott for residualene, k = 10
 
@@ -1033,33 +1025,44 @@ bind_rows(fit_tab(m3, 3), fit_tab(m10, 10)) |>
 #| fig-cap: "Moran-plott for residualene fra OLS og de romlige modellene, k = 10."
 #| fig-height: 7
 par(mfrow = c(2, 3))
-moran.plot(residuals(lm3),      listw = lw10, pch = ".", main = "OLS")
-moran.plot(residuals(m10$slx),  listw = lw10, pch = ".", main = "SLX")
-moran.plot(residuals(m10$sem),  listw = lw10, pch = ".", main = "SEM")
-moran.plot(residuals(m10$sdem), listw = lw10, pch = ".", main = "SDEM")
-moran.plot(residuals(m10$sar),  listw = lw10, pch = ".", main = "SAR")
+moran.plot(residuals(lm3),      listw = lw10, pch = ".", labels = FALSE,
+           main = "OLS",  xlab = "Residual", ylab = "Romlig lagget residual")
+moran.plot(residuals(m10$slx),  listw = lw10, pch = ".", labels = FALSE,
+           main = "SLX",  xlab = "Residual", ylab = "Romlig lagget residual")
+moran.plot(residuals(m10$sem),  listw = lw10, pch = ".", labels = FALSE,
+           main = "SEM",  xlab = "Residual", ylab = "Romlig lagget residual")
+moran.plot(residuals(m10$sdem), listw = lw10, pch = ".", labels = FALSE,
+           main = "SDEM", xlab = "Residual", ylab = "Romlig lagget residual")
+moran.plot(residuals(m10$sar),  listw = lw10, pch = ".", labels = FALSE,
+           main = "SAR",  xlab = "Residual", ylab = "Romlig lagget residual")
 par(mfrow = c(1, 1))
 ```
 
 ```{r}
 #| label: moran-modeller-tall
 #| include: false
-# Moran's I for residualene (til støtte for diskusjonen)
+# Moran's I for residualene (til støtte for teksten)
 sapply(
   list(OLS = lm3, SLX = m10$slx, SEM = m10$sem, SDEM = m10$sdem, SAR = m10$sar),
   \(m) moran.test(residuals(m), lw10)$estimate[1]
 )
+
+# Ufiltrerte feilledd fra SEM (y - Xb): Moran's I = 0,417
+X <- model.matrix(f3, boligdata)
+u_sem <- log(boligdata$price) - X %*% coef(m10$sem)[colnames(X)]
+moran.test(as.numeric(u_sem), lw10)$estimate[1]
 ```
 
-[Skriv hva @fig-moran-modeller viser: hvilke modeller fjerner mest av den romlige autokorrelasjonen, og hvilke etterlater en tydelig positiv stigning? Bruk Moran's I-verdiene fra konsollen.]
+@fig-moran-modeller og Moran's I for residualene (k = 10) viser at modellene fjerner autokorrelasjon i svært ulik grad. OLS (0,325) og SLX (0,322) har en tydelig positiv stigning, så de romlige lagene av forklaringsvariablene i SLX reduserer Moran's I nesten ikke. SAR fjerner det meste (0,045), men plottet har fortsatt en svak positiv stigning. SEM (−0,020) og SDEM (−0,018) har en flat punktsky og svakt negative verdier, så det er ingen gjenværende positiv autokorrelasjon i residualene.
+
+Sammenligningen må tolkes med et forbehold. Residualene fra SEM som R returnerer, er filtrerte residualer der den romlige feilprosessen er trukket ut. De ufiltrerte feilleddene ($y - X\hat{\beta}$) har Moran's I = 0,417, så feilleddet er sterkt romlig autokorrelert, slik modellen antar ($\hat{\lambda}$ = 0,722), og det er denne avhengigheten feilmodellen fjerner. Verdiene nær null for SEM og SDEM kan derfor ikke sammenlignes direkte med OLS og SLX. For SDEM har vi ikke kontrollert dette.
 
 ## SAR og impacts
 
-I en SAR-modell er koeffisientene ikke marginale effekter, siden en endring i en boligs egenskaper påvirker prisen både i boligen selv og, gjennom tilbakekoblinger, i naboene og tilbake igjen. Vi bruker derfor impacts. Den direkte effekten er effekten av en endring i en bolig på dens egen pris, inkludert tilbakekoblingene. Den indirekte effekten er den samlede effekten på de andre boligenes priser (spillover), og den totale effekten er summen. Maslianskaia-Pautrel og Baumont (2016) viser at den implisitte prisen i en romlig modell er mer enn koeffisienten, og at den kombinerer en tilbakekoblingseffekt og en propagasjonseffekt.
+I en SAR-modell er koeffisientene ikke marginale effekter, siden en endring i en boligs egenskaper påvirker prisen både i boligen selv og, gjennom tilbakekoblinger, i naboene og tilbake igjen. Vi bruker derfor impacts. Den direkte effekten er effekten av en endring i en bolig på dens egen pris, inkludert tilbakekoblingene. Den indirekte effekten er den samlede effekten på de andre boligenes priser (spillover), og den totale effekten er summen. @maslianskaia-pautrel2016 viser at den implisitte prisen i en romlig modell er mer enn koeffisienten, og at den kombinerer en tilbakekoblingseffekt og en propagasjonseffekt.
 
 ```{r}
 #| label: sar-impacts
-#| cache: true
 #| include: false
 set.seed(2026)
 
@@ -1075,21 +1078,24 @@ imp10 <- impacts_sar(m10, lw10)
 
 ```{r}
 #| label: tbl-impacts
-#| tbl-cap: "Impacts fra SAR-modellen for utvalgte variabler (z-verdier fra simulering)."
-vars <- c("log(TLA)", "age_sold", "inntekt_1000", "andel_svart", "PM25_z")
+#| tbl-cap: "Impacts fra SAR-modellen for boligareal og andel svarte (z-verdier fra simulering)."
+vars <- c("log(TLA)", "andel_svart")
 
 imp_tab <- function(imp, k) {
-  s <- summary(imp, zstats = TRUE, short = TRUE)
+  s    <- summary(imp, zstats = TRUE, short = TRUE)
+  navn <- str_remove(attr(imp, "bnames"), " dy/dx$| \\(F\\)$")
+
   tibble(
     k = k,
-    Variabel     = vars,
-    Direkte      = imp$res$direct[vars],
-    `z (dir.)`   = s$zmat[vars, 1],
-    Indirekte    = imp$res$indirect[vars],
-    `z (indir.)` = s$zmat[vars, 2],
-    Totalt       = imp$res$total[vars],
-    `z (tot.)`   = s$zmat[vars, 3]
-  )
+    Variabel     = navn,
+    Direkte      = as.numeric(imp$res$direct),
+    `z (dir.)`   = s$zmat[, 1],
+    Indirekte    = as.numeric(imp$res$indirect),
+    `z (indir.)` = s$zmat[, 2],
+    Totalt       = as.numeric(imp$res$total),
+    `z (tot.)`   = s$zmat[, 3]
+  ) |>
+    filter(Variabel %in% vars)
 }
 
 bind_rows(imp_tab(imp3, 3), imp_tab(imp10, 10)) |>
@@ -1098,11 +1104,15 @@ bind_rows(imp_tab(imp3, 3), imp_tab(imp10, 10)) |>
   fmt_number(columns = c(4, 6, 8), decimals = 1)
 ```
 
-[Skriv hva @tbl-impacts viser for to-tre av variablene: størrelsen på de direkte, indirekte og totale effektene og hva de betyr i prosent. Sammenlign med OLS-koeffisientene i @tbl-models.]
+SAR-modellen har ρ = 0,400 med k = 3 og ρ = 0,531 med k = 10 (@tbl-fit). Med en radstandardisert vektmatrise er totaleffekten av en variabel lik koeffisienten delt på (1 − ρ), altså omtrent 1,7 og 2,1 ganger koeffisienten. @tbl-impacts viser direkte, indirekte og totale impacts for boligareal og andel svarte, og alle er signifikante.
+
+For boligareal og k = 10 er den direkte effekten 0,46, den indirekte 0,49 og den totale 0,95: når boligen selv blir 1 % større, øker prisen med 0,46 %, og når alle de andre boligene blir 1 % større, øker prisen med ytterligere 0,49 %. Med k = 3 er tallene 0,48, 0,28 og 0,77, så størrelsen på spilloveren avhenger sterkt av vektmatrisen. Totaleffekten av andel svarte er −0,74 med k = 3 og −0,80 med k = 10. Den indirekte effekten utgjør omtrent 37 % av totaleffekten med k = 3 og 51 % med k = 10.
+
+I SAR er forholdet mellom indirekte og direkte effekt det samme for alle variabler (omtrent 0,58 med k = 3 og 1,06 med k = 10). Det er ikke et empirisk funn, men en følge av at alle spillovers styres av den samme parameteren ρ. SDEM har ikke denne begrensningen. Den økonomiske tolkningen av impactene gjør vi i oppgave 8.
 
 ## Valg av romlig modell
 
-[Skriv en kort konklusjon: hva viser Moran's I-testen, hvilken modell velger Anselins metode (SAR, SEM eller OLS), hvilken velger LeSages metode (SDEM, SEM, SLX eller OLS), og hvilken fjerner mest romlig autokorrelasjon i residualene? Er de to metodene enige, og er k = 3 og k = 10 enige?]
+Moran's I-testen viser romlig autokorrelasjon i residualene fra alle tre hedoniske modeller. Anselin's metode (Rao's score-tester) forkaster OLS, men gir ikke samme svar for begge vektmatriser: SAR med k = 3 og SEM med k = 10. LeSages metode (likelihood ratio-tester av nestede modeller) velger SDEM for begge vektmatriser, og SDEM har også lavere AIC enn SAR. SDEM og SEM fjerner den positive autokorrelasjonen i residualene, mens OLS og SLX ikke gjør det og SAR bare delvis. De to metodene er altså ikke fullstendig enige, men peker begge mot at den romlige avhengigheten må modelleres, og SDEM med k = 10 har lavest AIC av alle modellene. Vi bruker derfor SDEM med k = 10 som foretrukket modell, og SAR som sammenligning og for å beregne impacts.
 
 
 # Diskusjon av resultater

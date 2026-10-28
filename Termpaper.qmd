@@ -38,4 +38,4 @@ library(modelsummary)
 
 # 4. EDA i GeoDa
 
-# 5. 
+# 5.

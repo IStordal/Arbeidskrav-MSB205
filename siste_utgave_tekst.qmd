@@ -151,6 +151,8 @@ I regresjonstabellen rapporteres robuste t-verdier i parentes, slik arbeidskrave
 
 ![De tre hedoniske OLS-modellene. Koeffisienter med HC3-robuste t-verdier i parentes.](figurer_tekst/11_regresjonstabell.svg){width="100%"}
 
+<div style="page-break-before: always;"></div>
+
 ## Sammenligning av modellene
 
 Justert R² øker fra 0,731 i modell 1 til 0,829 i modell 2 og 0,832 i modell 3.
@@ -279,6 +281,8 @@ Siden inntektsvariabelen måles per 1 000 dollar, tilsvarer dette omtrent −0,1
 Resultatene viser at spillover-effekten er viktig for begge variablene.
 Samtidig har inntekt motsatt fortegn i SAR enn i OLS.
 Dette viser at resultatet for inntekt er følsomt for hvordan den romlige avhengigheten modelleres, og bør derfor tolkes forsiktig.
+
+<div style="page-break-before: always;"></div>
 
 # Diskusjon
 

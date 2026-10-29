@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="640" viewBox="0 0 1400 640">
+<rect width="100%" height="100%" fill="white"/>
+<style>.t{font-family:Arial,sans-serif;fill:#111}.title{font-size:30px;font-weight:700}.sub{font-size:18px;fill:#444}.h{font-size:17px;font-weight:700}.c{font-size:16px}.note{font-size:15px;fill:#444}</style>
+<text x="30" y="45" class="t title">Sammenligning av boligareal og inntekt, k = 10</text>
+<text x="30" y="76" class="t sub">Koeffisienter og p-verdier i OLS og de romlige modellene.</text>
+<rect x="20" y="115" width="1360" height="60" fill="#f0f0f0"/>
+<text x="35" y="152" class="t h">Modell / effekt</text><text x="400" y="152" class="t h">log(TLA)</text><text x="610" y="152" class="t h">p-verdi</text><text x="815" y="152" class="t h">inntekt_1000</text><text x="1060" y="152" class="t h">p-verdi</text>
+<text x="35" y="213" class="t c">OLS</text><text x="400" y="213" class="t c">0,5507</text><text x="610" y="213" class="t c">&lt; 0,001</text><text x="815" y="213" class="t c">0,00298</text><text x="1060" y="213" class="t c">&lt; 0,001</text>
+<rect x="20" y="235" width="1360" height="52" fill="#fafafa"/><text x="35" y="268" class="t c">SLX – egen effekt</text><text x="400" y="268" class="t c">0,5304</text><text x="610" y="268" class="t c">&lt; 0,001</text><text x="815" y="268" class="t c">0,00072</text><text x="1060" y="268" class="t c">0,669</text>
+<text x="35" y="323" class="t c">SLX – romlig lag</text><text x="400" y="323" class="t c">0,1347</text><text x="610" y="323" class="t c">&lt; 0,001</text><text x="815" y="323" class="t c">0,00107</text><text x="1060" y="323" class="t c">0,538</text>
+<rect x="20" y="342" width="1360" height="52" fill="#fafafa"/><text x="35" y="376" class="t c">SEM</text><text x="400" y="376" class="t c">0,5050</text><text x="610" y="376" class="t c">&lt; 0,001</text><text x="815" y="376" class="t c">0,00226</text><text x="1060" y="376" class="t c">0,018</text>
+<text x="35" y="431" class="t c">SDEM – egen effekt</text><text x="400" y="431" class="t c">0,5109</text><text x="610" y="431" class="t c">&lt; 0,001</text><text x="815" y="431" class="t c">0,00036</text><text x="1060" y="431" class="t c">0,817</text>
+<rect x="20" y="449" width="1360" height="52" fill="#fafafa"/><text x="35" y="483" class="t c">SDEM – romlig lag</text><text x="400" y="483" class="t c">0,1260</text><text x="610" y="483" class="t c">&lt; 0,001</text><text x="815" y="483" class="t c">0,00167</text><text x="1060" y="483" class="t c">0,340</text>
+<text x="35" y="538" class="t c">SAR – koeffisient</text><text x="400" y="538" class="t c">0,4448</text><text x="610" y="538" class="t c">&lt; 0,001</text><text x="815" y="538" class="t c">−0,00176</text><text x="1060" y="538" class="t c">&lt; 0,001</text>
+<rect x="20" y="115" width="1360" height="445" fill="none" stroke="#999"/><line x1="385" y1="115" x2="385" y2="560" stroke="#bbb"/><line x1="595" y1="115" x2="595" y2="560" stroke="#bbb"/><line x1="800" y1="115" x2="800" y2="560" stroke="#bbb"/><line x1="1045" y1="115" x2="1045" y2="560" stroke="#bbb"/>
+<line x1="20" y1="175" x2="1380" y2="175" stroke="#bbb"/><line x1="20" y1="235" x2="1380" y2="235" stroke="#bbb"/><line x1="20" y1="287" x2="1380" y2="287" stroke="#bbb"/><line x1="20" y1="342" x2="1380" y2="342" stroke="#bbb"/><line x1="20" y1="394" x2="1380" y2="394" stroke="#bbb"/><line x1="20" y1="449" x2="1380" y2="449" stroke="#bbb"/><line x1="20" y1="501" x2="1380" y2="501" stroke="#bbb"/><line x1="20" y1="560" x2="1380" y2="560" stroke="#bbb"/>
+<text x="30" y="605" class="t note">I SAR må koeffisientene ikke tolkes som totale effekter. Direct, indirect og total impacts vises separat.</text>
+</svg>

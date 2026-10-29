@@ -1297,9 +1297,7 @@ I den utforskende analysen i oppgave 4 fant vi tydelige romlige klynger, der sto
 Dette viser at det finnes romlige mønstre i dataene, men det er ikke nok alene til å konkludere med at OLS-modellen har et romlig problem.
 I oppgave 7 må vi derfor teste om residualene fra OLS fortsatt inneholder romlig autokorrelasjon ved hjelp av Moran's I.
 
-\[SETT INN FRA OPPGAVE 7: resultatet fra Moran's I på OLS-residualene for k = 3 og k = 10.
-Skriv om testen viser at det fortsatt finnes signifikant romlig autokorrelasjon.
-Dette er den viktigste koblingen mellom oppgave 7 og dette punktet.\]
+
 
 ### iii. Valg av romlig modell
 
@@ -1318,8 +1316,6 @@ En SAR-modell kan for eksempel være relevant dersom man mener at boligprisene p
 I denne oppgaven bruker vi både Specific-to-General og General-to-Specific.
 Anselin-tilnærmingen med Rao's Score-testene følger Specific-to-General, mens sammenligningen av SDEM, SEM, SLX og OLS ved hjelp av likelihood ratio-tester følger General-to-Specific.
 
-\[SETT INN FRA OPPGAVE 7: hvilken modell Rao's Score-testene peker mot for k = 3 og k = 10, og hvilken modell likelihood ratio-testene peker mot.
-Da kan siste avsnitt også endres fra «bruker vi» til «har vi brukt».\]
 
 ### iv. Tolkning av koeffisientene
 
@@ -1339,7 +1335,6 @@ I SLX og SDEM må vi også ta hensyn til de romliget laggede forklaringsvariable
 Den implisitte prisen består da både av effekten fra egen observasjon og en lokal spillover-effekt fra nærliggende observasjoner.
 I SAR kan ikke den vanlige koeffisienten alene tolkes som den totale effekten, fordi en endring kan spre seg mellom boliger gjennom den romligee prisavhengigheten [@maslianskaia-pautrel2016].
 
-\[SETT INN FRA OPPGAVE 7: - SEM-koeffisienten for `log(TLA)` og `inntekt_1000` - SAR-koeffisientene, men ikke bruk disse alene som den endelige implisitte prisen - SLX: egen koeffisient og romlig lagget koeffisient - SDEM: egen koeffisient og romlig lagget koeffisient - sammenlign kort med OLS-resultatene over.\]
 
 ### v. Signifikans, fortegn og størrelse
 
@@ -1357,8 +1352,6 @@ Skriv én setning om hvorvidt de er statistisk signifikante i modell 3.\]
 Det viktigste videre er om fortegn, størrelse og signifikans holder seg når vi tar hensyn til romlig avhengighet.
 Hvis en koeffisient blir betydelig mindre eller mister signifikans i de romlige modellene, kan det tyde på at OLS-koeffisienten også fanget opp romlige sammenhenger som ikke var modellert direkte.
 
-\[SETT INN FRA OPPGAVE 7: sammenlign signifikans, fortegn og størrelse for `log(TLA)` og `inntekt_1000` i SEM, SAR, SLX og SDEM.
-Her bør dere spesielt kommentere dersom resultatene endrer seg mye fra OLS.\]
 
 ### vi. Spatial impacts i SAR-modellen
 
@@ -1375,20 +1368,6 @@ For boligareal vil den direkte effekten vise hvordan en økning i boligarealet p
 For inntekt per capita vil den direkte effekten vise sammenhengen mellom inntektsnivået i området og prisen på boligen selv, mens den indirekte effekten viser om denne effekten også sprer seg til andre boliger.
 Den totale effekten viser den samlede virkningen.
 
-\[SETT INN FRA OPPGAVE 7: For `log(TLA)`: - direct impact = ...
-- indirect impact = ...
-- total impact = ...
-
-For `inntekt_1000`: - direct impact = ...
-- indirect impact = ...
-- total impact = ...
-
-Deretter tolker dere tallene økonomisk.
-Hvis direct impact for `log(TLA)` for eksempel er 0,54, betyr det omtrent at 1 % større boligareal gir 0,54 % høyere pris direkte.
-Hvis indirect impact er positiv, betyr det at noe av effekten også sprer seg til andre boliger.
-Total impact er summen av disse.\]
-
-Det er impacts fra SAR-modellen, og ikke bare den estimerte SAR-koeffisienten, som skal brukes når vi skal vurdere den implisitte prisen [@maslianskaia-pautrel2016].
 
 # Oppsummering/konklusjon
 

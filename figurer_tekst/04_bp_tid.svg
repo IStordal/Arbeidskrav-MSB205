@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="470" viewBox="0 0 1200 470">
+<rect width="100%" height="100%" fill="white"/>
+<style>.t{font-family:Arial,sans-serif;fill:#111}.title{font-size:30px;font-weight:700}.sub{font-size:18px;fill:#444}.h{font-size:18px;font-weight:700}.c{font-size:17px}</style>
+<text x="30" y="45" class="t title">Diagnostikk og tidsdummyer</text>
+<text x="30" y="76" class="t sub">HC3-robuste standardfeil brukes i OLS-modellene.</text>
+<rect x="20" y="130" width="1160" height="58" fill="#f0f0f0"/>
+<text x="30" y="166" class="t h">Test</text><text x="390" y="166" class="t h">Resultat</text><text x="820" y="166" class="t h">Konklusjon</text>
+<text x="30" y="224" class="t c">Breusch–Pagan, modell 1</text><text x="390" y="224" class="t c">BP = 2 086,8; p &lt; 0,001</text><text x="820" y="224" class="t c">Heteroskedastisitet</text>
+<rect x="20" y="246" width="1160" height="58" fill="#fafafa"/>
+<text x="30" y="282" class="t c">Breusch–Pagan, modell 2</text><text x="390" y="282" class="t c">BP = 2 099,4; p &lt; 0,001</text><text x="820" y="282" class="t c">Heteroskedastisitet</text>
+<text x="30" y="340" class="t c">Breusch–Pagan, modell 3</text><text x="390" y="340" class="t c">BP = 2 365,1; p &lt; 0,001</text><text x="820" y="340" class="t c">Heteroskedastisitet</text>
+<rect x="20" y="362" width="1160" height="58" fill="#fafafa"/>
+<text x="30" y="398" class="t c">Samlet test av year_month</text><text x="390" y="398" class="t c">F = 24,7; df = 69 og 25 242; p &lt; 0,001</text><text x="820" y="398" class="t c">Tidsdummyene beholdes</text>
+<rect x="20" y="130" width="1160" height="290" fill="none" stroke="#999" stroke-width="1"/>
+<line x1="380" y1="130" x2="380" y2="420" stroke="#bbb"/><line x1="810" y1="130" x2="810" y2="420" stroke="#bbb"/>
+<line x1="20" y1="188" x2="1180" y2="188" stroke="#bbb"/><line x1="20" y1="246" x2="1180" y2="246" stroke="#bbb"/><line x1="20" y1="304" x2="1180" y2="304" stroke="#bbb"/><line x1="20" y1="362" x2="1180" y2="362" stroke="#bbb"/><line x1="20" y1="420" x2="1180" y2="420" stroke="#bbb"/>
+</svg>

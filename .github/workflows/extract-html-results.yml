@@ -1,0 +1,33 @@
+name: Extract existing HTML results
+on:
+  push:
+    paths:
+      - '.github/workflows/extract-html-results.yml'
+  workflow_dispatch:
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract contexts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, html
+          s=Path('Kode Termpaper.html').read_text(errors='ignore')
+          s=html.unescape(re.sub(r'<[^>]+>', ' ', s))
+          s=re.sub(r'\s+', ' ', s)
+          keys=['inntekt_1000','log(TLA)','SAR-impacts','Impacts fra SAR','SDEM','SLX']
+          out=[]
+          for key in keys:
+              out.append('\n===== '+key+' =====\n')
+              for m in list(re.finditer(re.escape(key), s, flags=re.I))[:30]:
+                  out.append(s[max(0,m.start()-700):min(len(s),m.end()+1200)])
+                  out.append('\n---\n')
+          Path('html_contexts.txt').write_text('\n'.join(out))
+          PY
+          cat html_contexts.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: html-contexts
+          path: html_contexts.txt

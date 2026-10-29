@@ -3,7 +3,7 @@ name: Extract task8 results
 on:
   push:
     paths:
-      - 'extract_task8_results.R'
+      - 'extract_task8_k10_fast.R'
       - '.github/workflows/extract-task8.yml'
   workflow_dispatch:
 
@@ -19,11 +19,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y r-base r-cran-tidyverse r-cran-lubridate r-cran-sf r-cran-spdep r-cran-spatialreg r-cran-lmtest r-cran-sandwich
 
-      - name: Run result extraction
-        run: Rscript extract_task8_results.R
-
-      - name: Show results
-        run: cat task8_results.txt
+      - name: Run k10 result extraction
+        run: Rscript extract_task8_k10_fast.R 2>&1 | tee task8_results.txt
 
       - name: Upload results
         uses: actions/upload-artifact@v4

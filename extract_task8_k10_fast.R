@@ -19,18 +19,37 @@ h1 <- 'log(price) ~ log(TLA) + log(lotsize) + age_sold + solgt_for_ferdig + room
 h2 <- paste(h1,'+ dist_CBD + inntekt_1000 + andel_svart + andel_asiatisk + andel_andre + andel_blandet + andel_arbeidsledig + mwtt + LESSHSPCT + OVER64PCT + LINGISOPCT')
 h3 <- paste(h2,'+ PRE1960PCT_z + PTRAF_z + PNPL_z + PRMP_z + PTSDF_z + PM25_z')
 f3 <- as.formula(h3)
-lm3 <- lm(f3,data=D)
-coords <- st_coordinates(D); nb <- knn2nb(knearneigh(coords,k=10)); lw <- nb2listw(nb,style='W'); B <- st_drop_geometry(D)
+B <- st_drop_geometry(D)
+lm3 <- lm(f3,data=B)
+coords <- st_coordinates(D)
+nb <- knn2nb(knearneigh(coords,k=10))
+lw <- nb2listw(nb,style='W')
 durb <- ~ log(TLA)+log(lotsize)+age_sold+inntekt_1000+andel_svart+PM25_z
+
+cat('OLS HC3\n')
+print(coeftest(lm3,vcov.=vcovHC(lm3,type='HC3'))[c('log(TLA)','inntekt_1000'),,drop=FALSE])
+
+cat('\nSLX\n')
 slx <- lmSLX(f3,data=B,listw=lw,Durbin=durb)
-sem <- errorsarlm(f3,data=B,listw=lw,method='LU')
-sdem <- errorsarlm(f3,data=B,listw=lw,Durbin=durb,method='LU')
-sar <- lagsarlm(f3,data=B,listw=lw,method='LU')
+z <- coef(summary(slx)); print(z[grep('TLA|inntekt_1000',rownames(z)),,drop=FALSE])
+rm(slx); gc()
+
 getm <- function(m) {s<-summary(m); if(!is.null(s$Coef)) s$Coef else coef(s)}
-cat('OLS HC3\n'); print(coeftest(lm3,vcov.=vcovHC(lm3,type='HC3'))[c('log(TLA)','inntekt_1000'),,drop=FALSE])
-for(n in c('SLX','SEM','SDEM','SAR')) {m<-get(tolower(n)); cat('\n',n,'\n',sep=''); z<-getm(m); print(z[grep('TLA|inntekt_1000',rownames(z)),,drop=FALSE])}
-cat('\nrho=',sar$rho,' lambda_sem=',sem$lambda,' lambda_sdem=',sdem$lambda,'\n',sep='')
-# impacts: total multiplier exact for row-standardized W; direct multiplier via MC traces
-W<-as(lw,'CsparseMatrix'); tr<-trW(W,type='MC'); imp<-impacts(sar,tr=tr,R=200); si<-summary(imp,zstats=TRUE,short=TRUE)
+cat('\nSEM\n')
+sem <- errorsarlm(f3,data=B,listw=lw,method='MC')
+z <- getm(sem); print(z[grep('TLA|inntekt_1000',rownames(z)),,drop=FALSE]); cat('lambda=',sem$lambda,'\n')
+rm(sem); gc()
+
+cat('\nSDEM\n')
+sdem <- errorsarlm(f3,data=B,listw=lw,Durbin=durb,method='MC')
+z <- getm(sdem); print(z[grep('TLA|inntekt_1000',rownames(z)),,drop=FALSE]); cat('lambda=',sdem$lambda,'\n')
+rm(sdem); gc()
+
+cat('\nSAR\n')
+sar <- lagsarlm(f3,data=B,listw=lw,method='MC')
+z <- getm(sar); print(z[grep('TLA|inntekt_1000',rownames(z)),,drop=FALSE]); cat('rho=',sar$rho,'\n')
+
 cat('\nIMPACTS\n')
-print(cbind(direct=imp$res$direct,zd=si$zmat[,1],indirect=imp$res$indirect,zi=si$zmat[,2],total=imp$res$total,zt=si$zmat[,3])[c('log(TLA)','inntekt_1000'),,drop=FALSE])
+W<-as(lw,'CsparseMatrix'); tr<-trW(W,type='MC'); imp<-impacts(sar,tr=tr,R=200); si<-summary(imp,zstats=TRUE,short=TRUE)
+M <- cbind(direct=imp$res$direct,zd=si$zmat[,1],indirect=imp$res$indirect,zi=si$zmat[,2],total=imp$res$total,zt=si$zmat[,3])
+print(M[grep('TLA|inntekt_1000',rownames(M)),,drop=FALSE])

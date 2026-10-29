@@ -1,0 +1,479 @@
+---
+title: "Hedoniske boligprismodeller og romlig avhengighet i Lucas County, Ohio"
+subtitle: "Term paper i MSB205"
+author: "Ivan Stordal & Antonio Isa Jakobsen"
+date: last-modified
+date-format: "DD.MM.YYYY"
+lang: nb
+csl: hvl_apa7_stil_bokmal_v1.csl
+bibliography: MSB205.bib
+format:
+  html:
+    theme: none
+    toc: true
+    toc-title: "Innhold"
+    toc-depth: 3
+    number-sections: false
+    embed-resources: true
+editor: source
+execute:
+  echo: false
+  warning: false
+  message: false
+  error: false
+  cache: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(lubridate)
+library(sf)
+library(spdep)
+library(spatialreg)
+library(lmtest)
+library(sandwich)
+library(car)
+library(gt)
+library(modelsummary)
+library(units)
+
+lucas_full <- st_read("lucas_full.gpkg", quiet = TRUE)
+if (!inherits(lucas_full$sdate_dato, "Date")) {
+  lucas_full$sdate_dato <- as.Date(lucas_full$sdate_dato)
+}
+
+format_p <- function(p) {
+  ifelse(p < 0.001, "< 0,001", sub("\\.", ",", sprintf("%.3f", p)))
+}
+```
+
+# Datagrunnlag, klargjøring og utforskende analyse
+
+Dette kapitlet samler oppgave 1–4. Hensikten med disse delene er først og fremst å bygge datasettet som brukes i resten av oppgaven: klargjøre boligdataene, koble på EJScreen- og ACS-data, beregne avstand til Toledo sentrum og undersøke de viktigste romlige mønstrene før regresjonsanalysene.
+
+## Boligdata og avstand til CBD
+
+Utgangspunktet er `house` fra `spData`, som inneholder 25 357 boligsalg i Lucas County. Salgsdatoen ble gjort om til datoformat, og variabelen `year_month` ble laget for å kontrollere for måned og år i de senere modellene. Boligdataene ble gjort om til et spatialt `sf`-objekt og transformert til EPSG:2834.
+
+For å måle sentralitet opprettet vi et punkt for Toledo Central Business District (CBD) ved koordinatene −83,537778 og 41,652778. Luftlinjeavstanden fra hver bolig til CBD ble beregnet i kilometer og lagret som `dist_CBD`. På dette tidspunktet var alle 25 357 boligsalg fortsatt med i datasettet.
+
+## Kobling med EJScreen og ACS5
+
+EJScreen 2015 brukes til å beskrive demografiske forhold og miljøbelastninger i nærområdet [@fitzgerald2025]. Datasettet inneholdt opprinnelig 398 geografiske områder i Lucas County. Tract 9900, med ID `390959900000`, hadde ingen bosatte og nullverdier på områdevariablene og ble derfor fjernet. Etter dette gjensto 397 områder. Vannarealer ble fjernet før dataene ble koblet til boligene. Etter EJScreen-koblingen gjensto 25 352 boliger, altså fem færre enn i utgangspunktet.
+
+Fra ACS5 2011 hentet vi inn inntekt per capita, median husholdningsinntekt, etnisitet, arbeidsledighet, fattigdom og reisetid til arbeid. Etnisitetsvariablene ble omgjort til andeler, og gjennomsnittlig reisetid til arbeid (`mwtt`) ble beregnet som et vektet gjennomsnitt av tidsintervallene i ACS. Gjennomsnittlig `mwtt` er 21,55 minutter, medianen 21,18 minutter, med minimum 12,16 og maksimum 31,63 minutter.
+
+ACS-datasettet besto først av 128 Census tracts. Tract 9900 manglet inntektsinformasjon og ble fjernet, slik at 127 tracts gjensto. Etter den geografiske koblingen med boligdataene gjensto 25 351 boligsalg. Samlet falt dermed seks av de opprinnelige 25 357 observasjonene bort.
+
+```{r}
+#| label: tbl-databygging
+#| tbl-cap: "Oppbygging av det endelige analysedatasettet."
+tibble(
+  Steg = c(
+    "Opprinnelige boligsalg",
+    "Etter kobling med EJScreen",
+    "Etter kobling med ACS5 (lucas_full)"
+  ),
+  `Antall boliger` = c(25357, 25352, 25351)
+) |>
+  gt()
+```
+
+Det endelige datasettet `lucas_full` inneholder dermed boligegenskaper, salgsinformasjon, avstand til CBD, demografiske forhold og miljøvariabler for 25 351 boligsalg. Datasettet er lagret som GeoPackage og brukes videre i både GeoDa og R.
+
+## Prisfordeling og avstand til sentrum
+
+Salgsprisene varierer fra 2 000 til 875 000 dollar. Medianen er 65 500 dollar og gjennomsnittet 79 013 dollar, mens de midterste 50 prosentene av boligene ligger mellom 41 900 og 97 000 dollar. Fordelingen er dermed tydelig høyreskjev.
+
+For å undersøke beliggenhet delte vi boligene i fem like store grupper etter avstand til CBD.
+
+```{r}
+#| label: tbl-avstand
+#| tbl-cap: "Median salgspris etter avstand til Toledo CBD (fem like store grupper)."
+lucas_full |>
+  st_drop_geometry() |>
+  mutate(avstandsgruppe = ntile(dist_CBD, 5)) |>
+  group_by(avstandsgruppe) |>
+  summarise(
+    `Antall boliger` = n(),
+    `Medianpris (USD)` = median(price),
+    `Median avstand (km)` = median(dist_CBD),
+    .groups = "drop"
+  ) |>
+  gt() |>
+  fmt_number(columns = `Median avstand (km)`, decimals = 1) |>
+  fmt_number(columns = `Medianpris (USD)`, decimals = 0, use_seps = TRUE)
+```
+
+Medianprisen øker fra 25 000 dollar i gruppen nærmest sentrum til 118 500 dollar i gruppen lengst unna. Dette er en ubetinget sammenheng. Den viser ikke at avstand i seg selv gir høyere pris, fordi boliger og nabolag også er forskjellige. Dette undersøkes videre i de hedoniske modellene.
+
+## Bivariat lokal Moran's I
+
+For å undersøke romlige klynger mellom boligareal og pris brukte vi bivariat lokal Moran's I i GeoDa. `TLA` er første variabel og `price` er andre variabel. Statistikken sammenligner størrelsen på en bolig med gjennomsnittsprisen hos naboene. Vi bruker både k = 3 og k = 10 nærmeste naboer for å kontrollere om mønsteret er robust for ulike definisjoner av nabolag.
+
+![Bivariat lokal Moran's I for boligareal (`TLA`) og salgspris (`price`), k = 3.](Data/Lucas_k3.png){#fig-lisa-k3 width="95%"}
+
+![Bivariat lokal Moran's I for boligareal (`TLA`) og salgspris (`price`), k = 10.](Data/Lucas_k10.png){#fig-lisa-k10 width="95%"}
+
+```{r}
+#| label: tbl-lisa
+#| tbl-cap: "Antall boliger i signifikante bivariate lokale Moran-klynger ved 5 %-nivå."
+tibble(
+  Vekt = c("k = 3", "k = 10"),
+  `Høy–høy` = c(2507, 4440),
+  `Lav–lav` = c(3681, 6928),
+  `Høy–lav` = c(824, 1295),
+  `Lav–høy` = c(142, 568),
+  `Ikke signifikant` = c(18197, 12120)
+) |>
+  gt()
+```
+
+Med k = 3 er 7 154 boliger, omtrent 28 %, del av en signifikant klynge. Med k = 10 øker dette til 13 231 boliger, omtrent 52 %. Høy–høy og lav–lav dominerer i begge tilfeller. Det betyr at store boliger ofte ligger i områder med høye boligpriser, mens små boliger ofte ligger i områder med lave priser.
+
+Høy–høy-klyngene ligger særlig vest, nordvest og sørvest i studieområdet, mens lav–lav og høy–lav er mer konsentrert i sentrale og østlige områder. Hovedmønsteret er likt for k = 3 og k = 10, men flere observasjoner blir signifikante når nabolaget utvides til ti naboer. Analysen viser derfor tydelig romlig struktur i dataene. Om den romlige strukturen også finnes i regresjonsresidualene testes i oppgave 7.
+
+# Oppgave 5 – Hedoniske boligprismodeller
+
+```{r}
+#| label: model-prep
+#| include: false
+lucas_full <- lucas_full |>
+  mutate(
+    year_month = factor(as.character(year_month), levels = sort(unique(as.character(year_month)))),
+    age_sold = year(sdate_dato) - yrbuilt,
+    solgt_for_ferdig = age_sold < 0,
+    inntekt_1000 = income_pc / 1000,
+    stories = fct_collapse(
+      as_factor(stories),
+      two_plus = c("two", "two+half", "three", "other")
+    ),
+    across(
+      c(PRE1960PCT, PTRAF, PNPL, PRMP, PTSDF, PM25),
+      ~ as.numeric(scale(.x)),
+      .names = "{.col}_z"
+    )
+  )
+```
+
+Modellene bruker alle 25 351 boliger. Den avhengige variabelen er `log(price)`. Boligareal og tomtestørrelse er også logaritmert, slik at koeffisientene kan tolkes som elastisiteter. Modell 1 inneholder boligegenskaper og tidsdummyer. Modell 2 legger til avstand og nabolagsvariabler, mens modell 3 i tillegg inkluderer miljøvariabler. Modellene bygger på hedonisk pristeori [@bishop2020; @maslianskaia-pautrel2016].
+
+```{r}
+#| label: model-estimation
+#| include: false
+hmod1 <- "log(price) ~ log(TLA) + log(lotsize) + age_sold + solgt_for_ferdig + rooms + beds + baths + halfbaths + garage + stories + wall + year_month"
+hmod2 <- paste(hmod1, "+ dist_CBD + inntekt_1000 + andel_svart + andel_asiatisk + andel_andre + andel_blandet + andel_arbeidsledig + mwtt + LESSHSPCT + OVER64PCT + LINGISOPCT")
+hmod3 <- paste(hmod2, "+ PRE1960PCT_z + PTRAF_z + PNPL_z + PRMP_z + PTSDF_z + PM25_z")
+
+lm1 <- lm(as.formula(hmod1), data = lucas_full)
+lm2 <- lm(as.formula(hmod2), data = lucas_full)
+lm3 <- lm(as.formula(hmod3), data = lucas_full)
+```
+
+```{r}
+#| label: tbl-models
+#| tbl-cap: "Hedoniske modeller. Avhengig variabel er log(salgspris). Robuste HC3 t-verdier i parentes. Tidsdummyene er inkludert, men ikke vist."
+modelsummary(
+  list(`Modell 1` = lm1, `Modell 2` = lm2, `Modell 3` = lm3),
+  vcov = "HC3",
+  statistic = "statistic",
+  stars = TRUE,
+  coef_omit = "year_month",
+  gof_map = c("nobs", "r.squared", "adj.r.squared", "logLik"),
+  output = "gt"
+)
+```
+
+Breusch–Pagan-testen forkaster homoskedastisitet i alle tre modellene (p < 0,001), og vi bruker derfor HC3-robuste standardfeil. Justert R² øker fra 0,731 i modell 1 til 0,829 i modell 2 og 0,832 i modell 3. AIC faller fra 25 015 til 13 490 og deretter til 13 060. Modell 3 har dermed best tilpasning, men den klart største forbedringen kommer når nabolagsvariablene legges til i modell 2.
+
+I modell 3 er arealelastisiteten omtrent 0,55, slik at 1 % større boligareal henger sammen med omtrent 0,55 % høyere pris. Elastisiteten for tomtestørrelse er omtrent 0,12. Hvert ekstra år i boligaldren henger sammen med omtrent 0,8 % lavere pris. Inntekt per capita har en positiv sammenheng med pris, mens arbeidsledighet, lav utdanning og lengre reisetid til arbeid har negative sammenhenger. Miljøresultatene er mer blandede og tolkes som betingede sammenhenger, ikke som kausale effekter, blant annet fordi miljødataene er fra 2015 mens boligsalgene er fra 1993–1998 [@bishop2020].
+
+```{r}
+#| label: fig-diag
+#| fig-cap: "Diagnoseplott for modell 3."
+#| fig-width: 10
+#| fig-height: 8
+par(mfrow = c(2, 2))
+plot(lm3, which = 1:4)
+par(mfrow = c(1, 1))
+```
+
+Diagnoseplottene og Breusch–Pagan-testen viser heteroskedastisitet. Q-Q-plottet viser tunge haler, mens leverage-verdiene er lave. Dette støtter bruken av robuste standardfeil.
+
+# Oppgave 6 – Tidsdummyer
+
+Salgene strekker seg over flere år, og vi tester derfor om tidsdummyene i `year_month` samlet har betydning for prisen.
+
+```{r}
+#| label: tbl-tidstest
+#| tbl-cap: "Simultan F-test av tidsdummyene i modell 3 med HC3-robuste standardfeil."
+tt <- linearHypothesis(lm3, matchCoefs(lm3, "year_month"), white.adjust = "hc3")
+tibble(
+  `Antall restriksjoner` = abs(tt$Df[2]),
+  `Residual-frihetsgrader` = tt$Res.Df[2],
+  F = tt$F[2],
+  `p-verdi` = format_p(tt$`Pr(>F)`[2])
+) |>
+  gt() |>
+  fmt_number(columns = F, decimals = 1)
+```
+
+Testen gir F = 24,7 med 69 og 25 242 frihetsgrader og p < 0,001. Nullhypotesen om at alle tidsdummyene er lik null forkastes. Tidsdummyene bør derfor beholdes. Januar 1993 er referansemåned, og hver koeffisient viser prisforskjellen mot denne måneden for ellers like boliger.
+
+# Oppgave 7 – Romlige regresjonsmodeller
+
+## Romlig vektmatrise og Moran's I
+
+```{r}
+#| label: weights
+#| include: false
+coords <- st_coordinates(lucas_full)
+nb3 <- knn2nb(knearneigh(coords, k = 3))
+nb10 <- knn2nb(knearneigh(coords, k = 10))
+lw3 <- nb2listw(nb3, style = "W")
+lw10 <- nb2listw(nb10, style = "W")
+boligdata <- st_drop_geometry(lucas_full)
+```
+
+Vi bruker k-nærmeste naboer fordi alle boliger da får samme antall naboer, også i områder med ulik bebyggelsestetthet [@bivand2013]. Vi analyserer både k = 3 og k = 10, med radstandardiserte vekter.
+
+```{r}
+#| label: tbl-moran-ols
+#| tbl-cap: "Moran's I-test av OLS-residualene."
+moran_rad <- function(m, lw, modell, k) {
+  t <- lm.morantest(m, lw)
+  tibble(
+    Modell = modell,
+    k = k,
+    `Moran's I` = unname(t$estimate[1]),
+    `z-verdi` = unname(t$statistic),
+    `p-verdi` = format_p(t$p.value)
+  )
+}
+
+moran_ols <- bind_rows(
+  moran_rad(lm1, lw3, "Modell 1", 3),
+  moran_rad(lm1, lw10, "Modell 1", 10),
+  moran_rad(lm2, lw3, "Modell 2", 3),
+  moran_rad(lm2, lw10, "Modell 2", 10),
+  moran_rad(lm3, lw3, "Modell 3", 3),
+  moran_rad(lm3, lw10, "Modell 3", 10)
+)
+
+moran_ols |>
+  gt() |>
+  fmt_number(columns = `Moran's I`, decimals = 3) |>
+  fmt_number(columns = `z-verdi`, decimals = 1)
+```
+
+Moran's I er positiv og signifikant for alle OLS-modellene. For modell 3 er Moran's I omtrent 0,369 ved k = 3 og 0,325 ved k = 10. OLS-residualene inneholder dermed fortsatt tydelig romlig struktur.
+
+```{r}
+#| label: fig-moran-ols
+#| fig-cap: "Moran-plott for residualene fra OLS modell 3, k = 10."
+#| fig-height: 5
+moran.plot(residuals(lm3), lw10, pch = ".", labels = FALSE,
+           xlab = "Residual", ylab = "Romlig lagget residual")
+```
+
+## Estimering av romlige modeller
+
+Vi estimerer SEM, SAR, SLX og SDEM. SEM modellerer romlig avhengighet i feilleddet, SAR inkluderer en romlig lagget avhengig variabel, SLX inkluderer laggede forklaringsvariabler og SDEM kombinerer laggede forklaringsvariabler med en romlig feilprosess [@lesage2014; @maslianskaia-pautrel2016].
+
+```{r}
+#| label: spatial-models
+#| include: false
+#| cache: true
+set.seed(2026)
+f3 <- as.formula(hmod3)
+durbin <- ~ log(TLA) + log(lotsize) + age_sold + inntekt_1000 + andel_svart + PM25_z
+
+fit_spatial <- function(lw) {
+  list(
+    slx = lmSLX(f3, data = boligdata, listw = lw, Durbin = durbin),
+    sem = errorsarlm(f3, data = boligdata, listw = lw, method = "MC"),
+    sdem = errorsarlm(f3, data = boligdata, listw = lw, Durbin = durbin, method = "MC"),
+    sar = lagsarlm(f3, data = boligdata, listw = lw, method = "MC")
+  )
+}
+
+m3 <- fit_spatial(lw3)
+m10 <- fit_spatial(lw10)
+```
+
+## Anselins Specific-to-General-tilnærming
+
+```{r}
+#| label: tbl-rs
+#| tbl-cap: "Rao's Score-tester for OLS modell 3."
+rs_tab <- function(m, lw, k) {
+  rs <- lm.RStests(m, listw = lw, test = "all")
+  map_dfr(rs, function(t) tibble(
+    Observator = unname(t$statistic),
+    `p-verdi` = format_p(t$p.value)
+  ), .id = "Test") |>
+    mutate(k = k, .before = 1)
+}
+
+rs_all <- bind_rows(rs_tab(lm3, lw3, 3), rs_tab(lm3, lw10, 10))
+rs_all |>
+  gt() |>
+  fmt_number(columns = Observator, decimals = 1)
+```
+
+Både feil- og lagtestene er signifikante for begge vektene. For k = 3 er den robuste lagtesten sterkest, slik at Anselins metode peker mot SAR. For k = 10 er den robuste feiltesten sterkest, slik at metoden peker mot SEM. Modellvalget er dermed følsomt for k.
+
+## LeSages General-to-Specific-tilnærming
+
+```{r}
+#| label: tbl-lr
+#| tbl-cap: "Likelihood ratio-tester av nestede romlige modeller."
+lr_rad <- function(stor, liten, navn, k) {
+  t <- LR.Sarlm(stor, liten)
+  tibble(
+    k = k,
+    Test = navn,
+    `LR-observator` = unname(t$statistic),
+    Frihetsgrader = unname(t$parameter),
+    `p-verdi` = format_p(t$p.value)
+  )
+}
+
+lr_tab <- function(m, k) {
+  bind_rows(
+    lr_rad(m$sem, lm3, "SEM mot OLS", k),
+    lr_rad(m$slx, lm3, "SLX mot OLS", k),
+    lr_rad(m$sdem, m$sem, "SDEM mot SEM", k),
+    lr_rad(m$sdem, m$slx, "SDEM mot SLX", k)
+  )
+}
+
+lr_all <- bind_rows(lr_tab(m3, 3), lr_tab(m10, 10))
+lr_all |>
+  gt() |>
+  fmt_number(columns = `LR-observator`, decimals = 1) |>
+  fmt_number(columns = Frihetsgrader, decimals = 0)
+```
+
+LR-testene foretrekker SDEM framfor både SEM og SLX ved både k = 3 og k = 10. Dette tyder på at både romlig korrelerte utelatte forhold og lokale spillovers fra forklaringsvariablene har betydning.
+
+```{r}
+#| label: tbl-fit
+#| tbl-cap: "AIC og romlig parameter for OLS og de romlige modellene."
+fit_tab <- function(m, k) {
+  tibble(
+    k = k,
+    Modell = c("OLS", "SLX", "SEM", "SDEM", "SAR"),
+    AIC = c(AIC(lm3), AIC(m$slx), AIC(m$sem), AIC(m$sdem), AIC(m$sar)),
+    `lambda / rho` = c(NA_real_, NA_real_, m$sem$lambda, m$sdem$lambda, m$sar$rho)
+  )
+}
+
+fit_all <- bind_rows(fit_tab(m3, 3), fit_tab(m10, 10))
+fit_all |>
+  gt() |>
+  fmt_number(columns = AIC, decimals = 0, use_seps = TRUE) |>
+  fmt_number(columns = `lambda / rho`, decimals = 3) |>
+  sub_missing(missing_text = "")
+```
+
+SDEM har lavest AIC ved begge vektmatrisene, og SDEM med k = 10 har lavest AIC samlet. Vi bruker derfor SDEM med k = 10 som hovedmodell.
+
+## Residualer og SAR-impacts
+
+```{r}
+#| label: fig-moran-modeller
+#| fig-cap: "Moran-plott for residualene fra OLS og romlige modeller, k = 10."
+#| fig-height: 7
+par(mfrow = c(2, 3))
+moran.plot(residuals(lm3), lw10, pch = ".", labels = FALSE, main = "OLS", xlab = "Residual", ylab = "Romlig lagget residual")
+moran.plot(residuals(m10$slx), lw10, pch = ".", labels = FALSE, main = "SLX", xlab = "Residual", ylab = "Romlig lagget residual")
+moran.plot(residuals(m10$sem), lw10, pch = ".", labels = FALSE, main = "SEM", xlab = "Residual", ylab = "Romlig lagget residual")
+moran.plot(residuals(m10$sdem), lw10, pch = ".", labels = FALSE, main = "SDEM", xlab = "Residual", ylab = "Romlig lagget residual")
+moran.plot(residuals(m10$sar), lw10, pch = ".", labels = FALSE, main = "SAR", xlab = "Residual", ylab = "Romlig lagget residual")
+par(mfrow = c(1, 1))
+```
+
+SEM og SDEM fjerner mest av den positive residualautokorrelasjonen, mens SLX alene fjerner lite. Dette støtter valget av en modell som inkluderer en romlig feilprosess.
+
+```{r}
+#| label: sar-impacts
+#| include: false
+#| cache: true
+set.seed(2026)
+impacts_sar <- function(m, lw) {
+  W <- as(lw, "CsparseMatrix")
+  tr <- trW(W, type = "MC")
+  impacts(m$sar, tr = tr, R = 200)
+}
+imp3 <- impacts_sar(m3, lw3)
+imp10 <- impacts_sar(m10, lw10)
+
+vars_imp <- c("log(TLA)", "inntekt_1000")
+imp_tab <- function(imp, k) {
+  s <- summary(imp, zstats = TRUE, short = TRUE)
+  tibble(
+    k = k,
+    Variabel = vars_imp,
+    Direkte = imp$res$direct[vars_imp],
+    `z direkte` = s$zmat[vars_imp, 1],
+    Indirekte = imp$res$indirect[vars_imp],
+    `z indirekte` = s$zmat[vars_imp, 2],
+    Totalt = imp$res$total[vars_imp],
+    `z totalt` = s$zmat[vars_imp, 3]
+  )
+}
+imp_all <- bind_rows(imp_tab(imp3, 3), imp_tab(imp10, 10))
+```
+
+```{r}
+#| label: tbl-impacts
+#| tbl-cap: "SAR-impacts for boligareal og inntekt per capita."
+imp_all |>
+  gt() |>
+  fmt_number(columns = c(Direkte, Indirekte, Totalt), decimals = 4) |>
+  fmt_number(columns = c(`z direkte`, `z indirekte`, `z totalt`), decimals = 1)
+```
+
+SAR-impacts viser hvorfor en vanlig SAR-koeffisient ikke kan tolkes som hele effekten. For boligareal ved k = 10 er den direkte effekten omtrent 0,46, den indirekte omtrent 0,49 og den totale omtrent 0,95. Den romlige tilbakekoblingen er dermed betydelig [@maslianskaia-pautrel2016].
+
+Oppgave 7 gir samlet et tydelig resultat: OLS har romlig autokorrelasjon, Anselins metode peker mot SAR ved k = 3 og SEM ved k = 10, mens LeSages tilnærming velger SDEM for begge. SDEM med k = 10 har lavest AIC og brukes som hovedmodell.
+
+# Oppgave 8 – Diskusjon av resultater
+
+## Økonomisk tolkning og behovet for romlige modeller
+
+Den hedoniske boligprismodellen behandler boligen som en samling egenskaper. Salgsprisen reflekterer dermed fysiske boligegenskaper, beliggenhet, nabolag og miljøforhold [@bishop2020]. Modell 3 forklarer omtrent 83,2 % av variasjonen i logaritmisk salgspris etter justering for antall variabler, men Moran's I viser at residualene fortsatt er romlig autokorrelerte. OLS alene er derfor ikke tilstrekkelig.
+
+Dette er økonomisk rimelig fordi nærliggende boliger ofte deler lokale tjenester, miljøforhold og markedsforhold, og prisene kan også påvirkes av nærliggende sammenlignbare salg. Romlige modeller gjør det mulig å skille mellom romlig avhengighet i feilleddet, lokale spillovers fra forklaringsvariabler og globale prisavhengigheter [@lesage2014; @maslianskaia-pautrel2016].
+
+## Valg av romlig modell
+
+Specific-to-General-testene viser at modellvalget mellom SAR og SEM avhenger av vektmatrisen: SAR ved k = 3 og SEM ved k = 10. General-to-Specific-testene er mer stabile og velger SDEM ved begge k. Sammen med lavest AIC og residualer uten tydelig positiv romlig autokorrelasjon gjør dette SDEM med k = 10 til den foretrukne modellen.
+
+Dette betyr at boligprisene ikke bare påvirkes av boligens egne egenskaper. Egenskaper i nærområdet har lokale spillover-effekter, samtidig som det finnes romlig korrelerte forhold som ikke er direkte målt i datasettet.
+
+## Fortegn, størrelse og implisitte priser
+
+Boligareal har en positiv og økonomisk rimelig sammenheng med pris gjennom hele analysen. OLS-elastisiteten er omtrent 0,55, slik at 1 % større boligareal henger sammen med omtrent 0,55 % høyere pris når andre forhold holdes konstante. Inntekt per capita har også et positivt fortegn, men effekten er langt mindre i størrelse fordi variabelen måles per 1 000 dollar.
+
+I SEM kan koeffisientene tolkes omtrent som vanlige betingede effekter, mens SLX og SDEM i tillegg har lokale lag-effekter. I SAR må man bruke impacts fordi en endring kan påvirke både boligen selv og andre boliger gjennom det romlige systemet. For boligareal ved k = 10 er total impact omtrent 0,95, som er klart større enn den direkte effekten alene. Dette illustrerer poenget til @maslianskaia-pautrel2016 om at den implisitte prisen i en romlig modell kan bestå av både en direkte effekt og en propagasjonseffekt.
+
+## Samlet vurdering
+
+Resultatene viser at boligegenskaper og nabolagsforhold har sterk sammenheng med boligprisene i Lucas County, men også at boligmarkedet er tydelig romlig strukturert. Nabolagsvariablene forbedrer OLS-modellen kraftig, men de fjerner ikke den romlige autokorrelasjonen. Når den romlige strukturen modelleres direkte, peker analysen samlet mot SDEM med k = 10 som den mest robuste hovedmodellen.
+
+SAR-resultatene viser samtidig at globale spillovers kan være økonomisk viktige. Det viktigste metodiske resultatet er derfor at implisitte priser og koeffisienter ikke bør tolkes uten å ta hensyn til hvilken type romlig avhengighet modellen tillater.
+
+# Oppsummering
+
+Analysen viser at større boliger og boliger i områder med høyere inntektsnivå generelt har høyere priser, mens flere sosioøkonomiske ulemper er forbundet med lavere priser. Modell 3 er den beste av OLS-modellene, men residualene er fortsatt tydelig romlig autokorrelerte.
+
+De romlige testene viser at SDEM med k = 10 gir den beste samlede modelltilpasningen og fjerner mest av den gjenværende romlige strukturen. Valg av romlig modell har dermed betydning både for modelltilpasning og for hvordan de implisitte prisene skal tolkes. Boligprisene i Lucas County bør derfor forstås som del av et romlig sammenkoblet boligmarked, ikke som uavhengige observasjoner.
+
+# Referanser
+
+::: {#refs}
+:::

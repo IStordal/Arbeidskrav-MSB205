@@ -34,7 +34,6 @@ Til slutt sammenlignes resultatene for boligareal og inntekt på tvers av modell
 
 For å holde selve rapporten ryddig og oversiktlig vises ikke R-koden som er brukt til analysene.
 Tabeller og enkelte resultater er i stedet lagret som SVG-bilder og satt inn i rapporten.
-SVG er et vektorbasert bildeformat som gjør at resultatene beholder god kvalitet når de forstørres.
 Rapporten består derfor hovedsakelig av tekst, tabeller og figurer, mens selve koden holdes utenfor rapportteksten.
 
 # Datagrunnlag og klargjøring

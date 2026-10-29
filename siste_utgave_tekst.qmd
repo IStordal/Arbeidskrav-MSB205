@@ -15,6 +15,19 @@ format:
     toc-depth: 3
     number-sections: false
     embed-resources: true
+    include-in-header-text: |
+      <style>
+      @media print {
+        h1 {
+          break-before: page;
+          page-break-before: always;
+        }
+        h1:first-of-type {
+          break-before: auto;
+          page-break-before: auto;
+        }
+      }
+      </style>
   pdf:
     toc: true
     toc-title: "Innhold"

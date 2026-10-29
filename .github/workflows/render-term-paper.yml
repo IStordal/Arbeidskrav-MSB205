@@ -1,13 +1,13 @@
-name: Render term paper
+name: Render siste utgave tekst
 
 on:
   push:
     paths:
-      - 'Termpaper_render_test.qmd'
-      - 'lucas_full.gpkg'
+      - 'siste utgave tekst.qmd'
       - 'MSB205.bib'
       - 'hvl_apa7_stil_bokmal_v1.csl'
       - 'Data/**'
+      - 'figurer_tekst/**'
       - '.github/workflows/render-term-paper.yml'
   workflow_dispatch:
 
@@ -18,41 +18,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: System dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libudunits2-dev libgdal-dev libgeos-dev libproj-dev
-
-      - name: Setup R
-        uses: r-lib/actions/setup-r@v2
-
       - name: Setup Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
-      - name: Install R packages
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          packages: |
-            any::tidyverse
-            any::lubridate
-            any::sf
-            any::spdep
-            any::spatialreg
-            any::lmtest
-            any::sandwich
-            any::car
-            any::gt
-            any::modelsummary
-            any::units
-          cache-version: 1
-
       - name: Render
-        run: quarto render Termpaper_render_test.qmd --to html
+        run: quarto render "siste utgave tekst.qmd" --to html
 
       - name: Verify HTML
         run: |
-          test -f Termpaper_render_test.html
-          grep -q "Datagrunnlag, klargjøring og utforskende analyse" Termpaper_render_test.html
-          grep -q "Bivariat lokal Moran" Termpaper_render_test.html
-          grep -q "Oppgave 7" Termpaper_render_test.html
-          grep -q "Lucas_k3" Termpaper_render_test.html || true
+          test -f "siste utgave tekst.html"
+          grep -q "Datagrunnlag, klargjøring og utforskende analyse" "siste utgave tekst.html"
+          grep -q "Bivariat lokal Moran" "siste utgave tekst.html"
+          grep -q "Oppgave 7" "siste utgave tekst.html"
+          grep -q "SAR-impacts" "siste utgave tekst.html"

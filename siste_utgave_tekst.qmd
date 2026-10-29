@@ -383,3 +383,12 @@ Resultatene viser samlet at boligprisene i Lucas County bør forstås som del av
 
 ::: {#refs}
 :::
+
+## Bruk av kunstig intelligens
+
+I arbeidet med oppgaven har vi brukt ChatGPT som et støtteverktøy.
+Verktøyet har blant annet blitt brukt til språklig forbedring, strukturering av teksten, forklaring av statistiske og romlige metoder og feilsøking av R-kode.
+ChatGPT har også blitt brukt som støtte i arbeidet med å tolke resultater og kontrollere at de ulike delene av arbeidskravet er besvart.
+
+Alle analyser og resultater som presenteres i oppgaven er kontrollert mot egne beregninger i R og GeoDa, og faglige vurderinger er gjort med utgangspunkt i pensumlitteraturen og kildene som er oppgitt i referanselisten.
+Vi er selv ansvarlige for innholdet, tolkningene og konklusjonene i oppgaven.

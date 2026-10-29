@@ -12,6 +12,10 @@ format:
     toc-title: "Innhold"
     number-sections: false
     embed-resources: true
+pdf:
+    toc: true
+    toc-title: "Innhold"
+    number-sections: false
 editor: visual
 csl: hvl_apa7_stil_bokmal_v1.csl
 bibliography: MSB205.bib

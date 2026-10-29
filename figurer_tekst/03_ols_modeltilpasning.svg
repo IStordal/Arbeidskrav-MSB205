@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="412" viewBox="0 0 1200 412">
+<rect width="100%" height="100%" fill="white"/>
+<style>.t{font-family:Arial,sans-serif;fill:#111}.title{font-size:30px;font-weight:700}.sub{font-size:18px;fill:#444}.h{font-size:18px;font-weight:700}.c{font-size:17px}</style>
+<text x="30" y="45" class="t title">OLS-modellenes tilpasning</text>
+<text x="30" y="76" class="t sub">Modell 3 har best samlet tilpasning; den største forbedringen kommer fra modell 1 til 2.</text>
+<rect x="20" y="130" width="1160" height="58" fill="#f0f0f0"/>
+<text x="30" y="166" class="t h">Modell</text><text x="390" y="166" class="t h">Justert R²</text><text x="650" y="166" class="t h">AIC</text><text x="910" y="166" class="t h">BIC</text>
+<text x="30" y="224" class="t c">Modell 1</text><text x="390" y="224" class="t c">0,731</text><text x="650" y="224" class="t c">25 015</text><text x="910" y="224" class="t c">25 772</text>
+<rect x="20" y="246" width="1160" height="58" fill="#fafafa"/>
+<text x="30" y="282" class="t c">Modell 2</text><text x="390" y="282" class="t c">0,829</text><text x="650" y="282" class="t c">13 490</text><text x="910" y="282" class="t c">14 336</text>
+<text x="30" y="340" class="t c">Modell 3</text><text x="390" y="340" class="t c">0,832</text><text x="650" y="340" class="t c">13 060</text><text x="910" y="340" class="t c">13 956</text>
+<rect x="20" y="130" width="1160" height="232" fill="none" stroke="#999" stroke-width="1"/>
+<line x1="380" y1="130" x2="380" y2="362" stroke="#bbb"/><line x1="640" y1="130" x2="640" y2="362" stroke="#bbb"/><line x1="900" y1="130" x2="900" y2="362" stroke="#bbb"/>
+<line x1="20" y1="188" x2="1180" y2="188" stroke="#bbb"/><line x1="20" y1="246" x2="1180" y2="246" stroke="#bbb"/><line x1="20" y1="304" x2="1180" y2="304" stroke="#bbb"/><line x1="20" y1="362" x2="1180" y2="362" stroke="#bbb"/>
+</svg>

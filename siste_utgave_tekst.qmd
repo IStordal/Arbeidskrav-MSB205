@@ -15,7 +15,7 @@ format:
     toc-depth: 3
     number-sections: false
     embed-resources: true
-pdf:
+  pdf:
     toc: true
     toc-title: "Innhold"
     number-sections: false

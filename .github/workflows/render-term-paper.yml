@@ -27,7 +27,10 @@ jobs:
       - name: Verify HTML
         run: |
           test -f "siste utgave tekst.html"
-          grep -q "Datagrunnlag, klargjøring og utforskende analyse" "siste utgave tekst.html"
-          grep -q "Bivariat lokal Moran" "siste utgave tekst.html"
-          grep -q "Oppgave 7" "siste utgave tekst.html"
-          grep -q "SAR-impacts" "siste utgave tekst.html"
+          grep -q "Datagrunnlag og klargjøring" "siste utgave tekst.html"
+          grep -q "Romlige mønstre i boligmarkedet" "siste utgave tekst.html"
+          grep -q "Romlige modeller" "siste utgave tekst.html"
+          grep -q "Sammenligning av boligareal og inntekt" "siste utgave tekst.html"
+          grep -q "Direkte og indirekte effekter" "siste utgave tekst.html"
+          grep -q "0,00298" "siste utgave tekst.html"
+          grep -q "−0,00375" "siste utgave tekst.html"

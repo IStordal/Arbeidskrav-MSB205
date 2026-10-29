@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="528" viewBox="0 0 1200 528">
+<rect width="100%" height="100%" fill="white"/>
+<style>.t{font-family:Arial,sans-serif;fill:#111}.title{font-size:30px;font-weight:700}.sub{font-size:18px;fill:#444}.h{font-size:18px;font-weight:700}.c{font-size:17px}</style>
+<text x="30" y="45" class="t title">Moran's I etter romlig modellering (k = 10)</text>
+<text x="30" y="76" class="t sub">SEM/SDEM-residualene er filtrerte residualer og må tolkes med dette forbeholdet.</text>
+<rect x="20" y="130" width="1160" height="58" fill="#f0f0f0"/>
+<text x="30" y="166" class="t h">Modell</text><text x="270" y="166" class="t h">Moran's I</text><text x="510" y="166" class="t h">Tolkning</text>
+<text x="30" y="224" class="t c">OLS</text><text x="270" y="224" class="t c">0,325</text><text x="510" y="224" class="t c">Tydelig positiv autokorrelasjon</text>
+<rect x="20" y="246" width="1160" height="58" fill="#fafafa"/>
+<text x="30" y="282" class="t c">SLX</text><text x="270" y="282" class="t c">0,322</text><text x="510" y="282" class="t c">Nesten ingen forbedring</text>
+<text x="30" y="340" class="t c">SAR</text><text x="270" y="340" class="t c">0,045</text><text x="510" y="340" class="t c">Det meste fjernes</text>
+<rect x="20" y="362" width="1160" height="58" fill="#fafafa"/>
+<text x="30" y="398" class="t c">SEM</text><text x="270" y="398" class="t c">−0,020</text><text x="510" y="398" class="t c">Ingen gjenværende positiv autokorrelasjon</text>
+<text x="30" y="456" class="t c">SDEM</text><text x="270" y="456" class="t c">−0,018</text><text x="510" y="456" class="t c">Ingen gjenværende positiv autokorrelasjon</text>
+<rect x="20" y="130" width="1160" height="348" fill="none" stroke="#999" stroke-width="1"/>
+<line x1="260" y1="130" x2="260" y2="478" stroke="#bbb"/><line x1="500" y1="130" x2="500" y2="478" stroke="#bbb"/>
+<line x1="20" y1="188" x2="1180" y2="188" stroke="#bbb"/><line x1="20" y1="246" x2="1180" y2="246" stroke="#bbb"/><line x1="20" y1="304" x2="1180" y2="304" stroke="#bbb"/><line x1="20" y1="362" x2="1180" y2="362" stroke="#bbb"/><line x1="20" y1="420" x2="1180" y2="420" stroke="#bbb"/><line x1="20" y1="478" x2="1180" y2="478" stroke="#bbb"/>
+</svg>

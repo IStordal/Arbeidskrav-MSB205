@@ -25,93 +25,78 @@ hmod1 <- "log(price) ~ log(TLA) + log(lotsize) + age_sold + solgt_for_ferdig + r
 hmod2 <- paste(hmod1, "+ dist_CBD + inntekt_1000 + andel_svart + andel_asiatisk + andel_andre + andel_blandet + andel_arbeidsledig + mwtt + LESSHSPCT + OVER64PCT + LINGISOPCT")
 hmod3 <- paste(hmod2, "+ PRE1960PCT_z + PTRAF_z + PNPL_z + PRMP_z + PTSDF_z + PM25_z")
 f3 <- as.formula(hmod3)
-lm3 <- lm(f3, data = lucas_full)
+boligdata <- st_drop_geometry(lucas_full)
+lm3 <- lm(f3, data = boligdata)
 
 coords <- st_coordinates(lucas_full)
-nb3 <- knn2nb(knearneigh(coords, k = 3))
 nb10 <- knn2nb(knearneigh(coords, k = 10))
-lw3 <- nb2listw(nb3, style = "W")
 lw10 <- nb2listw(nb10, style = "W")
-boligdata <- st_drop_geometry(lucas_full)
 durbin <- ~ log(TLA) + log(lotsize) + age_sold + inntekt_1000 + andel_svart + PM25_z
 
-fit_spatial <- function(lw) {
-  list(
-    slx = lmSLX(f3, data = boligdata, listw = lw, Durbin = durbin),
-    sem = errorsarlm(f3, data = boligdata, listw = lw, method = "MC"),
-    sdem = errorsarlm(f3, data = boligdata, listw = lw, Durbin = durbin, method = "MC"),
-    sar = lagsarlm(f3, data = boligdata, listw = lw, method = "MC")
-  )
-}
-m3 <- fit_spatial(lw3)
-m10 <- fit_spatial(lw10)
+slx <- lmSLX(f3, data = boligdata, listw = lw10, Durbin = durbin)
+sem <- errorsarlm(f3, data = boligdata, listw = lw10, method = "MC")
+sdem <- errorsarlm(f3, data = boligdata, listw = lw10, Durbin = durbin, method = "MC")
+sar <- lagsarlm(f3, data = boligdata, listw = lw10, method = "MC")
+mods <- list(SLX = slx, SEM = sem, SDEM = sdem, SAR = sar)
 
-fmt <- function(x) sprintf("%.8f", x)
-
-sink("task8_results.txt")
-cat("=== CLASSES ===\n")
-for (nm in names(m10)) cat(nm, ":", paste(class(m10[[nm]]), collapse=","), "\n")
-
-cat("\n=== OLS HC3 SELECTED ===\n")
-ct <- coeftest(lm3, vcov. = vcovHC(lm3, type = "HC3"))
-for (term in c("log(TLA)", "inntekt_1000")) {
-  cat(term, "coef=", fmt(ct[term,1]), " se=", fmt(ct[term,2]), " t=", fmt(ct[term,3]), " p=", format(ct[term,4], scientific=TRUE), "\n", sep="")
-}
-
+fmt <- function(x) sprintf("%.8f", as.numeric(x))
 get_mat <- function(m) {
   s <- summary(m)
   if (!is.null(s$Coef)) return(s$Coef)
   if (!is.null(s$coefficients)) return(s$coefficients)
-  if (!is.null(coef(s))) return(coef(s))
+  z <- coef(s)
+  if (is.matrix(z)) return(z)
   stop("No coefficient matrix")
 }
 
-cat("\n=== K10 COEFFICIENT NAMES MATCHING TLA OR INCOME ===\n")
-for (nm in names(m10)) {
-  mat <- get_mat(m10[[nm]])
-  hits <- grep("TLA|inntekt_1000", rownames(mat), value=TRUE)
-  cat("--", nm, "--\n")
+sink("task8_results.txt")
+cat("=== OLS HC3 SELECTED ===\n")
+ct <- coeftest(lm3, vcov. = vcovHC(lm3, type = "HC3"))
+for (term in c("log(TLA)", "inntekt_1000")) {
+  cat(term, " coef=", fmt(ct[term,1]), " se=", fmt(ct[term,2]),
+      " stat=", fmt(ct[term,3]), " p=", format(ct[term,4], scientific=TRUE), "\n", sep="")
+}
+
+cat("\n=== K10 SELECTED COEFFICIENTS ===\n")
+for (nm in names(mods)) {
+  mat <- get_mat(mods[[nm]])
+  hits <- grep("TLA|inntekt_1000", rownames(mat), value = TRUE)
+  cat("-- ", nm, " --\n", sep="")
   for (term in hits) {
     row <- mat[term,,drop=TRUE]
-    cat(term, ":", paste(names(row), fmt(as.numeric(row)), collapse=" | "), "\n")
+    cat(term, ": ", paste(names(row), fmt(row), collapse=" | "), "\n", sep="")
   }
 }
 
-cat("\n=== K3 COEFFICIENT NAMES MATCHING TLA OR INCOME ===\n")
-for (nm in names(m3)) {
-  mat <- get_mat(m3[[nm]])
-  hits <- grep("TLA|inntekt_1000", rownames(mat), value=TRUE)
-  cat("--", nm, "--\n")
-  for (term in hits) {
-    row <- mat[term,,drop=TRUE]
-    cat(term, ":", paste(names(row), fmt(as.numeric(row)), collapse=" | "), "\n")
+cat("\n=== K10 SPATIAL PARAMETERS ===\n")
+cat("SEM lambda=", fmt(sem$lambda), "\n", sep="")
+cat("SDEM lambda=", fmt(sdem$lambda), "\n", sep="")
+cat("SAR rho=", fmt(sar$rho), "\n", sep="")
+
+cat("\n=== K10 SAR IMPACTS ===\n")
+W <- as(lw10, "CsparseMatrix")
+tr <- trW(W, type = "MC")
+imp <- impacts(sar, tr = tr, R = 200)
+simp <- summary(imp, zstats = TRUE, short = TRUE)
+impact_names <- rownames(as.matrix(imp$res$direct))
+if (is.null(impact_names)) impact_names <- names(imp$res$direct)
+if (is.null(impact_names)) impact_names <- attr(imp, "bnames")
+cat("impact_names=", paste(impact_names, collapse=","), "\n", sep="")
+for (target in c("log(TLA)", "inntekt_1000")) {
+  i <- match(target, impact_names)
+  if (is.na(i)) {
+    i <- grep(target, impact_names, fixed=TRUE)[1]
   }
-}
-
-cat("\n=== SPATIAL PARAMETERS ===\n")
-cat("k3 SEM lambda=", fmt(m3$sem$lambda), " SDEM lambda=", fmt(m3$sdem$lambda), " SAR rho=", fmt(m3$sar$rho), "\n", sep="")
-cat("k10 SEM lambda=", fmt(m10$sem$lambda), " SDEM lambda=", fmt(m10$sdem$lambda), " SAR rho=", fmt(m10$sar$rho), "\n", sep="")
-
-impact_extract <- function(m, lw, label) {
-  W <- as(lw, "CsparseMatrix")
-  tr <- trW(W, type = "MC")
-  imp <- impacts(m$sar, tr = tr, R = 200)
-  s <- summary(imp, zstats = TRUE, short = TRUE)
-  bnames <- attr(imp, "bnames")
-  clean <- stringr::str_remove(bnames, " dy/dx$| \\(F\\)$")
-  cat("\n=== IMPACTS ", label, " ===\n", sep="")
-  for (target in c("log(TLA)", "inntekt_1000")) {
-    i <- which(clean == target)
-    if (!length(i)) { cat(target, " NOT_FOUND names=", paste(clean, collapse=","), "\n"); next }
+  if (is.na(i) || !length(i)) {
+    cat(target, " NOT_FOUND\n", sep="")
+  } else {
     cat(target,
-        " direct=", fmt(as.numeric(imp$res$direct[i])),
-        " z_direct=", fmt(s$zmat[i,1]),
-        " indirect=", fmt(as.numeric(imp$res$indirect[i])),
-        " z_indirect=", fmt(s$zmat[i,2]),
-        " total=", fmt(as.numeric(imp$res$total[i])),
-        " z_total=", fmt(s$zmat[i,3]), "\n", sep="")
+        " direct=", fmt(imp$res$direct[i]),
+        " z_direct=", fmt(simp$zmat[i,1]),
+        " indirect=", fmt(imp$res$indirect[i]),
+        " z_indirect=", fmt(simp$zmat[i,2]),
+        " total=", fmt(imp$res$total[i]),
+        " z_total=", fmt(simp$zmat[i,3]), "\n", sep="")
   }
 }
-impact_extract(m3, lw3, "K3")
-impact_extract(m10, lw10, "K10")
 sink()

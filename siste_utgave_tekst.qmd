@@ -23,16 +23,16 @@ editor: visual
 Denne oppgaven undersøker hvilke faktorer som henger sammen med boligpriser i Lucas County, Ohio, og om boligmarkedet viser romlige sammenhenger som gjør at vanlige regresjonsmodeller ikke er tilstrekkelige.
 Analysen tar utgangspunkt i boligsalg fra perioden 1993-1998 og kombinerer boligdata med informasjon om nabolag, demografi og miljø fra ACS5 og EJScreen.
 
-Oppgave 1-4 handler hovedsakelig om innhenting, klargjøring og kobling av data, og er derfor samlet i ett kapittel om datagrunnlag og klargjøring.
+Oppgave 1-4 handler om innhenting, klargjøring og kobling av data, og vi har derfor valgt å samlet alt i ett kapittel om datagrunnlag og klargjøring.
 Her beregnes blant annet avstand til Toledo sentrum, og det undersøkes hvordan boligpriser og boligareal fordeler seg geografisk.
 Videre estimeres hedoniske boligprismodeller for å undersøke hvilke bolig-, nabolags- og miljøegenskaper som henger sammen med boligprisen.
 
-Et viktig tema i oppgaven er om boliger som ligger nær hverandre også har priser som påvirkes av de samme lokale forholdene.
+Et viktig tema i oppgaven vår er om boliger som ligger nær hverandre også har priser som påvirkes av de samme lokale forholdene.
 Vi tester derfor for romlig autokorrelasjon og sammenligner OLS med de romlige modellene SEM, SAR, SLX og SDEM.
 Modellene sammenlignes blant annet ved hjelp av Moran's I, Rao's Score-tester, likelihood ratio-tester og AIC.
 Til slutt sammenlignes resultatene for boligareal og inntekt på tvers av modellene, og direkte og indirekte effekter fra SAR-modellen diskuteres.
 
-For å holde selve rapporten ryddig og oversiktlig vises ikke R-koden som er brukt til analysene.
+For å holde selve rapporten ryddig og oversiktlig har vi valgt å ikke vise R-koden som er brukt til analysene.
 Tabeller og enkelte resultater er i stedet lagret som SVG-bilder og satt inn i rapporten.
 Rapporten består derfor hovedsakelig av tekst, tabeller og figurer, mens selve koden holdes utenfor rapportteksten.
 
